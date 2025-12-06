@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Login - Camera Rental</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <nav class="navbar glass-panel">
+        <a href="index.html" class="nav-brand">LensLocker</a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-box glass-panel">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Buyer Access</h2>
+
+            <div id="login-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" placeholder="buyer@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="••••••••">
+                </div>
+                <button onclick="handleLogin()" class="btn btn-primary" style="width: 100%;">Log In</button>
+                <p style="text-align: center; margin-top: 1rem; color: #94a3b8;">
+                    Want to rent? <a href="#" onclick="toggleMode()" style="color: var(--primary-color);">Create
+                        account</a>
+                </p>
+            </div>
+
+            <div id="signup-form" style="display: none;">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signup-email" placeholder="buyer@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signup-password" placeholder="••••••••">
+                </div>
+                <button onclick="handleSignup()" class="btn btn-primary" style="width: 100%;">Sign Up to Rent</button>
+                <p style="text-align: center; margin-top: 1rem; color: #94a3b8;">
+                    Already have an account? <a href="#" onclick="toggleMode()" style="color: var(--primary-color);">Log
+                        in</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="supabase-client.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        let mode = 'login';
+
+        function toggleMode() {
+            mode = mode === 'login' ? 'signup' : 'login';
+            document.getElementById('login-form').style.display = mode === 'login' ? 'block' : 'none';
+            document.getElementById('signup-form').style.display = mode === 'signup' ? 'block' : 'none';
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            await signIn(email, pass, 'buyer');
+        }
+
+        async function handleSignup() {
+            const email = document.getElementById('signup-email').value;
+            const pass = document.getElementById('signup-password').value;
+            await signUp(email, pass, 'buyer');
+        }
+    </script>
+</body>
+
+</html>
