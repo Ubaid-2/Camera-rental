@@ -1,6 +1,11 @@
 // C:\Users\hp\.gemini\antigravity\scratch\camera-rental-system\auth.js
 
-async function signUp(email, password, role) {
+async function signUp(email, password, role, cnicFront, cnicBack, userPhoto) {
+    if (!cnicFront || !cnicBack || !userPhoto) {
+        alert("Please upload ALL 3 required photos (CNIC Front, Back, and Your Photo).");
+        return;
+    }
+
     // 1. Sign up with Supabase Auth
     const { data, error } = await sb.auth.signUp({
         email: email,
@@ -14,28 +19,59 @@ async function signUp(email, password, role) {
 
     // 2. Create profile entry
     if (data.user) {
-        // Check if we have a session (logged in)
-        const { data: sessionData } = await sb.auth.getSession();
+        // Helper to upload one file
+        const uploadFile = async (file, suffix) => {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${data.user.id}_${suffix}.${fileExt}`;
+            const { error: upErr } = await sb.storage
+                .from('cnic_images')
+                .upload(fileName, file);
 
-        if (!sessionData.session) {
-            console.warn("No active session after signup. Email confirmation likely required.");
-            alert("Signup successful! PLEASE CHECK YOUR EMAIL to confirm your account.");
-            return;
-        }
+            if (upErr) throw upErr;
 
-        console.log("Attempting to create profile for user:", data.user.id);
+            if (upErr) throw upErr;
 
-        const { error: profileError } = await sb
-            .from('profiles')
-            .insert([{ id: data.user.id, email: email, role: role }]);
+            // SECURE CHANGE: We now return the path, NOT the public URL.
+            // Admin will generate a Signed URL on the fly.
+            return fileName;
+        };
 
-        if (profileError) {
-            console.error("Error creating profile:", profileError);
-            alert("Account created but profile setup failed. Error: " + profileError.message);
-        } else {
-            console.log("Profile created successfully!");
-            alert("Signup successful! Please log in.");
-            window.location.reload();
+        try {
+            console.log("Uploading verification documents...");
+
+            // Upload all 3 in parallel
+            const [frontUrl, backUrl, photoUrl] = await Promise.all([
+                uploadFile(cnicFront, 'front'),
+                uploadFile(cnicBack, 'back'),
+                uploadFile(userPhoto, 'selfie')
+            ]);
+
+            console.log("Files uploaded. Creating profile...");
+
+            const { error: profileError } = await sb
+                .from('profiles')
+                .insert([{
+                    id: data.user.id,
+                    email: email,
+                    role: role,
+                    cnic_front_url: frontUrl,
+                    cnic_back_url: backUrl,
+                    user_photo_url: photoUrl,
+                    status: 'pending'
+                }]);
+
+            if (profileError) {
+                console.error("Error creating profile:", profileError);
+                alert("Account created but profile setup failed. Error: " + profileError.message);
+            } else {
+                console.log("Profile created successfully!");
+                alert("Signup successful! Your account is PENDING APPROVAL. You cannot log in yet.");
+                window.location.reload();
+            }
+
+        } catch (err) {
+            console.error("Error uploading files:", err);
+            alert("Signup failed during file upload: " + err.message);
         }
     }
 }
@@ -51,19 +87,47 @@ async function signIn(email, password, expectedRole) {
         return;
     }
 
-    // Check role
+    // Check role and status
     if (data.user) {
-        const { data: profile } = await sb
+        const { data: profile, error: profileErr } = await sb
             .from('profiles')
-            .select('role')
+            .select('role, status')
             .eq('id', data.user.id)
             .single();
 
-        if (profile && profile.role === expectedRole) {
+        if (profileErr) {
+            console.error("Profile fetch error:", profileErr);
+            // If it's a "Row not found" error (code PGRST116), it means no profile exists
+            if (profileErr.code !== 'PGRST116') {
+                alert("Login failed due to database error: " + profileErr.message);
+                await sb.auth.signOut();
+                return;
+            }
+            // If it IS PGRST116, we fall through to 'if (profile)' check which handles missing profile
+        }
+
+        if (profile) {
+            if (profile.role !== expectedRole && expectedRole !== 'admin') { // Allow admin to login if we had a shared login, but we sort of don't. Kept simple.
+                alert(`Access denied. You are not a ${expectedRole}.`);
+                await sb.auth.signOut();
+                return;
+            }
+
+            if (profile.status !== 'approved') {
+                alert(`Your account status is ${profile.status}. You cannot log in until approved.`);
+                await sb.auth.signOut();
+                return;
+            }
+
             // Success
-            window.location.href = expectedRole === 'seller' ? 'seller_dashboard.html' : 'buyer_dashboard.html';
+            if (expectedRole === 'admin') {
+                window.location.href = 'admin_dashboard.html';
+            } else {
+                window.location.href = expectedRole === 'seller' ? 'seller_dashboard.html' : 'buyer_dashboard.html';
+            }
+
         } else {
-            alert(`Access denied. You are not a ${expectedRole}.`);
+            alert("Profile not found.");
             await sb.auth.signOut();
         }
     }

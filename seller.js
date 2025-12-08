@@ -11,7 +11,7 @@ async function checkAuth() {
     loadListings(session.user.id);
 }
 
-// Load listings for this seller
+// Load listings for this seller with SECURE SIGNED URLs
 async function loadListings(userId) {
     const container = document.getElementById('listings-container');
 
@@ -27,16 +27,31 @@ async function loadListings(userId) {
     }
 
     if (cameras.length === 0) {
-        container.innerHTML = `<p style="color: #94a3b8;">You haven't listed any cameras yet.</p>`;
+        container.innerHTML = `<p style="color: var(--text-color); opacity: 0.7;">You haven't listed any cameras yet.</p>`;
         return;
     }
 
-    container.innerHTML = cameras.map(cam => `
+    // Generate Signed URLs
+    const camerasWithUrls = await Promise.all(cameras.map(async (cam) => {
+        let imageUrl = 'https://via.placeholder.com/400x300?text=No+Image';
+        if (cam.image_url) {
+            if (cam.image_url.startsWith('http')) {
+                imageUrl = cam.image_url; // Legacy
+            } else {
+                // Generate Signed URL
+                const { data } = await sb.storage.from('camera_images').createSignedUrl(cam.image_url, 3600);
+                if (data) imageUrl = data.signedUrl;
+            }
+        }
+        return { ...cam, signedUrl: imageUrl };
+    }));
+
+    container.innerHTML = camerasWithUrls.map(cam => `
         <div class="card">
-            <img src="${cam.image_url || 'https://via.placeholder.com/400x300?text=No+Image'}" alt="${cam.name}">
+            <img src="${cam.signedUrl}" alt="${cam.name}">
             <div class="card-body">
                 <h3>${cam.name}</h3>
-                <p style="color: #94a3b8;">${cam.description}</p>
+                <p style="color: var(--text-color); opacity: 0.8;">${cam.description}</p>
                 <div style="font-weight: 700; color: var(--primary-color); margin-top: 1rem;">
                     $${cam.price_per_day} / day
                 </div>
@@ -45,31 +60,121 @@ async function loadListings(userId) {
     `).join('');
 }
 
-// Add new camera logic
+// Preview Gallery Images
+function previewGallery() {
+    const input = document.getElementById('gallery-files');
+    const container = document.getElementById('gallery-preview');
+    container.innerHTML = '';
+
+    if (input.files.length > 8) {
+        alert("Maximum 8 images allowed!");
+        input.value = ''; // Clear
+        return;
+    }
+
+    Array.from(input.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = '60px';
+            img.style.height = '60px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '4px';
+            container.appendChild(img);
+        }
+        reader.readAsDataURL(file);
+    });
+}
+
+// Add new camera logic with MULTI-IMAGE UPLOAD
 async function addCamera() {
     const name = document.getElementById('camera-name').value;
     const desc = document.getElementById('camera-desc').value;
     const price = document.getElementById('camera-price').value;
-    const img = document.getElementById('camera-image').value;
 
-    const { data: { user } } = await sb.auth.getUser();
+    const coverInput = document.getElementById('camera-image-file'); // Main Cover
+    const galleryInput = document.getElementById('gallery-files');   // Gallery
 
-    const { error } = await sb
-        .from('cameras')
-        .insert([{
-            owner_id: user.id,
-            name: name,
-            description: desc,
-            price_per_day: price,
-            image_url: img
-        }]);
+    const coverFile = coverInput.files[0];
+    const galleryFiles = galleryInput.files;
 
-    if (error) {
-        alert("Error adding listing: " + error.message);
-    } else {
-        alert("Listing added successfully!");
+    if (!name || !price || !coverFile) {
+        alert("Please fill in fields and upload at least a Cover Photo.");
+        return;
+    }
+
+    if (galleryFiles.length > 8) {
+        alert("Maximum 8 gallery images allowed.");
+        return;
+    }
+
+    const startBtn = document.querySelector('button[onclick="addCamera()"]');
+    startBtn.textContent = "Uploading...";
+    startBtn.disabled = true;
+
+    try {
+        const { data: { user } } = await sb.auth.getUser();
+
+        // 1. Upload Cover Photo
+        const coverExt = coverFile.name.split('.').pop();
+        const coverName = `${user.id}_cover_${Date.now()}.${coverExt}`;
+
+        const { error: upErr } = await sb.storage
+            .from('camera_images')
+            .upload(coverName, coverFile);
+
+        if (upErr) throw upErr;
+
+        // 2. Insert Camera Record
+        const { data: cameraData, error: camErr } = await sb
+            .from('cameras')
+            .insert([{
+                owner_id: user.id,
+                name: name,
+                description: desc,
+                price_per_day: price,
+                image_url: coverName // Main Cover Path
+            }])
+            .select()
+            .single();
+
+        if (camErr) throw camErr;
+        const cameraId = cameraData.id;
+
+        // 3. Upload & Insert Gallery Images (Parallel)
+        if (galleryFiles.length > 0) {
+            const galleryPromises = Array.from(galleryFiles).map(async (file, idx) => {
+                const ext = file.name.split('.').pop();
+                const fileName = `${user.id}_${cameraId}_${idx}_${Date.now()}.${ext}`;
+
+                // Upload
+                const { error: gUpErr } = await sb.storage
+                    .from('camera_images')
+                    .upload(fileName, file);
+
+                if (gUpErr) throw gUpErr;
+
+                // Insert to Gallery Table
+                return sb.from('camera_gallery').insert([{
+                    camera_id: cameraId,
+                    image_url: fileName
+                }]);
+            });
+
+            await Promise.all(galleryPromises);
+        }
+
+        alert("Listing added successfully with images!");
         hideAddModal();
         loadListings(user.id);
+
+    } catch (error) {
+        console.error(error);
+        alert("Error creating listing: " + error.message);
+    } finally {
+        startBtn.textContent = "Post Listing";
+        startBtn.disabled = false;
     }
 }
 

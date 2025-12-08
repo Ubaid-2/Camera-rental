@@ -46,7 +46,40 @@
                     <label>Password</label>
                     <input type="password" id="signup-password" placeholder="••••••••">
                 </div>
-                <button onclick="handleSignup()" class="btn btn-primary" style="width: 100%;">Sign Up to Rent</button>
+                <div class="form-group">
+                    <label>CNIC Front Side</label>
+                    <div class="camera-btn-group">
+                        <input type="file" id="signup-cnic-front" accept="image/*" style="display:none">
+                        <button onclick="openCamera('signup-cnic-front', 'environment')" class="btn btn-secondary">Take
+                            Photo</button>
+                        <button onclick="document.getElementById('signup-cnic-front').click()"
+                            class="btn btn-secondary">Upload File</button>
+                    </div>
+                    <div id="preview-signup-cnic-front" class="preview-container"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>CNIC Back Side</label>
+                    <div class="camera-btn-group">
+                        <input type="file" id="signup-cnic-back" accept="image/*" style="display:none">
+                        <button onclick="openCamera('signup-cnic-back', 'environment')" class="btn btn-secondary">Take
+                            Photo</button>
+                        <button onclick="document.getElementById('signup-cnic-back').click()"
+                            class="btn btn-secondary">Upload File</button>
+                    </div>
+                    <div id="preview-signup-cnic-back" class="preview-container"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Your Photo (Selfie)</label>
+                    <input type="file" id="signup-user-photo" accept="image/*" style="display:none">
+                    <button onclick="openCamera('signup-user-photo', 'user')" class="btn btn-secondary"
+                        style="width:100%; margin-top:0.5rem;">Take Selfie (Camera Only)</button>
+                    <div id="preview-signup-user-photo" class="preview-container"></div>
+                </div>
+
+                <button onclick="handleSignup()" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Sign Up
+                    to Rent</button>
                 <p style="text-align: center; margin-top: 1rem; color: #94a3b8;">
                     Already have an account? <a href="#" onclick="toggleMode()" style="color: var(--primary-color);">Log
                         in</a>
@@ -55,7 +88,20 @@
         </div>
     </div>
 
+    <!-- Camera Modal -->
+    <div id="camera-modal" class="camera-modal">
+        <div class="camera-container">
+            <video id="camera-video" autoplay playsinline></video>
+            <div class="camera-controls">
+                <button onclick="closeCamera()" class="btn-close-cam">Cancel</button>
+                <button onclick="capturePhoto()" class="btn-capture"></button>
+            </div>
+        </div>
+    </div>
+
     <script src="config.js"></script>
+    <script src="theme.js"></script>
+    <script src="camera_utils.js"></script>
     <script src="supabase-client.js"></script>
     <script src="auth.js"></script>
     <script>
@@ -76,7 +122,12 @@
         async function handleSignup() {
             const email = document.getElementById('signup-email').value;
             const pass = document.getElementById('signup-password').value;
-            await signUp(email, pass, 'buyer');
+
+            const front = document.getElementById('signup-cnic-front').files[0];
+            const back = document.getElementById('signup-cnic-back').files[0];
+            const photo = document.getElementById('signup-user-photo').files[0];
+
+            await signUp(email, pass, 'buyer', front, back, photo);
         }
     </script>
 </body>

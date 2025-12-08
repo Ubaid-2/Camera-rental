@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Profile - LensLocker</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .banner {
+            height: 200px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            position: relative;
+        }
+
+        .seller-header {
+            max-width: 800px;
+            margin: -60px auto 2rem;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .seller-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid var(--card-bg);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            object-fit: cover;
+            background: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar glass-panel">
+        <a href="index.html" class="nav-brand">LensLocker</a>
+        <a href="buyer_dashboard.html" class="btn btn-outline">Back to Market</a>
+    </nav>
+
+    <div class="banner"></div>
+
+    <div class="glass-panel seller-header">
+        <img id="seller-img" src="https://via.placeholder.com/120" class="seller-avatar">
+        <h1 id="seller-name" style="margin-top: 1rem;">Loading...</h1>
+        <p id="seller-since" style="opacity: 0.7;">Member since...</p>
+    </div>
+
+    <div class="container">
+        <h3
+            style="margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; display:inline-block;">
+            Active Listings</h3>
+        <div id="seller-listings" class="grid">
+            <p>Loading listings...</p>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="theme.js"></script>
+    <script src="supabase-client.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const sellerId = params.get('id');
+
+        if (!sellerId) {
+            alert("No seller specified");
+            window.location.href = 'buyer_dashboard.html';
+        }
+
+        async function loadSeller() {
+            // 1. Fetch Profile
+            const { data: profile, error } = await sb
+                .from('profiles')
+                .select('*')
+                .eq('id', sellerId)
+                .single();
+
+            if (error || !profile) {
+                document.getElementById('seller-name').innerText = "Seller not found";
+                return;
+            }
+
+            document.getElementById('seller-name').innerText = profile.full_name || profile.email.split('@')[0];
+            document.getElementById('seller-since').innerText = `Member since ${new Date(profile.created_at).getFullYear()}`;
+
+            // Avatar
+            if (profile.user_photo_url) {
+                if (profile.user_photo_url.startsWith('http')) {
+                    document.getElementById('seller-img').src = profile.user_photo_url;
+                } else {
+                    const { data } = await sb.storage.from('cnic_images').createSignedUrl(profile.user_photo_url, 3600);
+                    if (data) document.getElementById('seller-img').src = data.signedUrl;
+                }
+            }
+
+            // 2. Fetch Listings
+            const { data: cameras } = await sb
+                .from('cameras')
+                .select('*')
+                .eq('owner_id', sellerId)
+                .eq('available', true);
+
+            const container = document.getElementById('seller-listings');
+
+            if (!cameras || cameras.length === 0) {
+                container.innerHTML = "<p>No active listings.</p>";
+                return;
+            }
+
+            container.innerHTML = "";
+
+            // Render Cards (Simplified)
+            for (const cam of cameras) {
+                let imgUrl = 'https://via.placeholder.com/400x300';
+                if (cam.image_url) {
+                    const { data } = await sb.storage.from('camera_images').createSignedUrl(cam.image_url, 3600);
+                    if (data) imgUrl = data.signedUrl;
+                }
+
+                container.innerHTML += `
+                    <div class="card">
+                        <img src="${imgUrl}" alt="${cam.name}">
+                        <div class="card-body">
+                            <h3>${cam.name}</h3>
+                            <p style="color:var(--text-color);">${cam.description.substring(0, 60)}...</p>
+                            <p class="price">$${cam.price_per_day} / day</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        loadSeller();
+    </script>
+</body>
+
+</html>

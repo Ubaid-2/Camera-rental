@@ -7,8 +7,21 @@ drop table if exists profiles cascade;
 create table profiles (
   id uuid references auth.users not null primary key,
   email text,
-  role text check (role in ('buyer', 'seller')),
+  role text check (role in ('buyer', 'seller', 'admin')),
+  cnic_front_url text,
+  cnic_back_url text,
+  user_photo_url text,
+  status text default 'pending' check (status in ('pending', 'approved', 'rejected')),
   created_at timestamptz default now()
+);
+
+-- Create Storage Bucket for CNICs
+insert into storage.buckets (id, name, public) 
+values ('cnic_images', 'cnic_images', true)
+on conflict (id) do nothing;
+
+create policy "Anyone can upload CNIC" on storage.objects for insert with check ( bucket_id = 'cnic_images' );
+create policy "Anyone can view CNIC" on storage.objects for select using ( bucket_id = 'cnic_images' );
 );
 
 -- Create cameras table
