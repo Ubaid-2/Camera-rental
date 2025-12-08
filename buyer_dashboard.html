@@ -12,16 +12,18 @@
 <body>
     <nav class="navbar glass-panel">
         <a href="index.html" class="nav-brand">LensLocker Buyer</a>
-        <span id="user-display" style="color: var(--text-color); margin-right: 1rem; opacity: 0.8;"></span>
-        <a href="profile.html" class="btn btn-outline"
-            style="font-size: 0.8rem; padding: 0.5rem 1rem; margin-right: 0.5rem;">My Profile</a>
-        <button onclick="handleLogout()" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem;">Log
-            Out</button>
+        <div class="nav-links" style="display:flex; align-items:center;">
+            <span id="user-display"
+                style="color: var(--text-color); margin-right: 1rem; opacity: 0.8; display:none;"></span>
+            <a href="profile.html" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem;">My
+                Profile</a>
+            <button onclick="handleLogout()" class="btn btn-outline"
+                style="font-size: 0.8rem; padding: 0.5rem 1rem; margin-left:0.5rem;">Log Out</button>
         </div>
     </nav>
 
     <div class="container">
-        <header style="margin-bottom: 3rem;">
+        <header style="margin-bottom: 3rem; text-align:center;">
             <h2>Available Cameras</h2>
             <p style="color: #94a3b8;">Browse premium gear available for rent.</p>
         </header>
@@ -32,12 +34,9 @@
     </div>
 
     <!-- Rent Modal -->
-    <div id="rent-modal" class="modal"
-        style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.8);">
-        <div class="modal-content glass-panel"
-            style="margin: 15% auto; padding: 2rem; width: 400px; position:relative;">
-            <button onclick="closeRentModal()"
-                style="position:absolute; right:15px; top:10px; background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+    <div id="rent-modal" class="modal">
+        <div class="modal-content glass-panel">
+            <button onclick="closeRentModal()" class="close-modal">&times;</button>
             <h3>Request Rental</h3>
             <p><strong>Camera:</strong> <span id="modal-camera-name"></span></p>
             <p><strong>Total Price:</strong> $<span id="modal-total-price">0</span></p>
@@ -55,19 +54,16 @@
     </div>
 
     <!-- PRODUCT DETAIL MODAL (Gallery) -->
-    <div id="product-modal" class="modal"
-        style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.8);">
-        <div class="glass-panel"
-            style="margin: 2% auto; padding: 20px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; position: relative;">
-            <button onclick="closeProductModal()"
-                style="position:absolute; right:20px; top:20px; background:none; border:none; color:white; font-size:2rem; cursor:pointer;">&times;</button>
+    <div id="product-modal" class="modal">
+        <div class="modal-content glass-panel large">
+            <button onclick="closeProductModal()" class="close-modal">&times;</button>
 
             <div style="display:flex; flex-direction:column; gap:1.5rem;">
                 <!-- Main Gallery -->
                 <div class="gallery-container">
                     <div
                         style="height: 400px; background: #000; display:flex; align-items:center; justify-content:center; border-radius:8px; overflow:hidden;">
-                        <img id="detail-main-img" src="" style="max-width:100%; max-height:100%; object-fit:contain;">
+                        <img id="detail-main-img" src="" style="max-height:100%; object-fit:contain;">
                     </div>
                     <div id="detail-thumbnails"
                         style="display:flex; gap:10px; margin-top:10px; overflow-x:auto; padding-bottom:5px;">
@@ -78,13 +74,12 @@
                 <!-- Info -->
                 <div style="color:white;">
                     <h2 id="detail-title" style="font-size:2rem; margin-bottom:0.5rem;">Title</h2>
-                    <h3 style="color:var(--primary-color); font-size:1.5rem; margin-bottom:1rem;" id="detail-price">
-                        $0 / day</h3>
+                    <h3 style="color:var(--primary-color); font-size:1.5rem; margin-bottom:1rem;" id="detail-price">$0 /
+                        day</h3>
                     <p id="detail-desc" style="opacity:0.9; line-height:1.6;">Description...</p>
 
                     <button id="detail-rent-btn" class="btn btn-primary"
-                        style="width:100%; margin-top:1.5rem; padding:1rem; font-size:1.1rem;">Rent This
-                        Camera</button>
+                        style="width:100%; margin-top:1.5rem; padding:1rem; font-size:1.1rem;">Rent This Camera</button>
                 </div>
             </div>
         </div>
