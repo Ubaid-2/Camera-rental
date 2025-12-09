@@ -64,7 +64,6 @@ create policy "Sellers can delete their own cameras"
 on cameras for delete using ( auth.uid() = owner_id );
 
 -- Create rentals table
-create table rentals (
   id uuid default gen_random_uuid() primary key,
   camera_id uuid references cameras(id) not null,
   buyer_id uuid references profiles(id) not null,
@@ -76,8 +75,13 @@ create table rentals (
   transaction_id text,
   payment_proof_url text,
   pickup_time text,
+  
+  -- Contact Info (Contract)
+  renter_name text,
+  renter_phone text,
+  renter_address text,
 
-  status text default 'pending' check (status in ('pending', 'approved', 'rejected', 'completed')),
+  status text default 'pending' check (status in ('pending', 'approved', 'rejected', 'completed', 'cancelled')),
   created_at timestamptz default now()
 );
 
