@@ -301,9 +301,11 @@ async function loadRentalRequests(pendingOnly) {
         .order('created_at', { ascending: false });
 
     if (pendingOnly) {
-        query = query.eq('status', 'pending');
+        // Show both "pending" approval and "payment_pending" requests
+        query = query.in('status', ['pending', 'payment_pending']);
     } else {
-        query = query.neq('status', 'pending');
+        // History = everything except pending and payment_pending
+        query = query.not('status', 'in', '(pending,payment_pending)');
     }
 
     const { data: rentals, error } = await query;
@@ -327,33 +329,60 @@ async function loadRentalRequests(pendingOnly) {
         if (r.status === 'approved') badgeColor = 'green';
         if (r.status === 'rejected') badgeColor = 'red';
         if (r.status === 'completed') badgeColor = 'blue';
-
-        // Generate Signed URL for proof if exists
-        // Note: As discussed in schema, we assume authenticated users can view proofs for prototype simplicity.
-        // Ideally we generate a signed URL here if the bucket was private-private.
-        // Since we used a policy 'Authenticated Users can view', we can construct the public URL or use createSignedUrl.
-        // Let's use createSignedUrl to be safe/consistent with best practices.
+        if (r.status === 'payment_pending') badgeColor = 'yellow';
+        if (r.status === 'payment_confirmed') badgeColor = 'limegreen';
 
         let proofLink = '';
         if (r.payment_proof_url) {
-            // We do this async inside map... wait this is messy. 
-            // Better to just show a "View Proof" button that calls a function to open it.
             proofLink = `<button onclick="viewPaymentProof('${r.payment_proof_url}')" style="background:none; border:none; text-decoration:underline; color:var(--primary-color); cursor:pointer; font-size:0.9rem;">View Payment Proof</button>`;
+        }
+
+        // Action buttons based on status
+        let actionButtons = '';
+
+        // PENDING - Show Approve/Reject
+        if (r.status === 'pending') {
+            actionButtons = `
+                <div style="display:flex; gap:0.5rem; align-self: center;">
+                    <button onclick="updateRentalStatus('${r.id}', 'approved')" style="background:#22c55e; color:white; border:none; padding:0.5rem 1rem; border-radius:4px; cursor:pointer;">Approve</button>
+                    <button onclick="updateRentalStatus('${r.id}', 'rejected')" style="background:#ef4444; color:white; border:none; padding:0.5rem 1rem; border-radius:4px; cursor:pointer;">Reject</button>
+                </div>
+            `;
+        }
+
+        // PAYMENT_PENDING - Show payment info and confirm button
+        if (r.status === 'payment_pending') {
+            actionButtons = `
+                <div style="background:rgba(251,191,36,0.1); padding:1rem; border-radius:8px; border:1px solid #fbbf24; min-width:250px;">
+                    <p style="margin:0 0 0.5rem 0; color:#fbbf24; font-weight:bold;">⏳ Awaiting Payment Verification</p>
+                    <p style="margin:0; font-size:0.9rem;">Method: <strong>${r.payment_method || 'Unknown'}</strong></p>
+                    ${r.payment_method === 'online' ? `<p style="margin:0; font-size:0.9rem;">Trx ID: <strong>${r.transaction_id || 'N/A'}</strong></p>` : ''}
+                    ${proofLink}
+                    <button onclick="confirmPayment('${r.id}')" style="margin-top:0.5rem; background:#22c55e; color:white; border:none; padding:0.5rem 1.5rem; border-radius:4px; cursor:pointer; width:100%;">✓ Confirm Payment Received</button>
+                </div>
+            `;
+            proofLink = ''; // Don't show it twice
         }
 
         return `
         <div class="glass-panel" style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
-            <div>
+            <div style="flex:1;">
                 <h4 style="margin:0 0 0.5rem 0;">Request for <strong>${camName}</strong></h4>
-                <p style="margin:0; font-size:0.9rem; opacity:0.8;">Buyer: <strong>${buyerName}</strong></p>
+                
+                <div style="margin-bottom:0.5rem;">
+                    <p style="margin:0; font-size:0.9rem; opacity:0.8;">Buyer: <strong>${buyerName}</strong></p>
+                    <p style="margin:0; font-size:0.9rem; opacity:0.8;">Name: <strong>${r.renter_name || 'N/A'}</strong></p>
+                    <p style="margin:0; font-size:0.9rem; opacity:0.8;">Phone: <strong>${r.renter_phone || 'N/A'}</strong></p>
+                    <p style="margin:0; font-size:0.9rem; opacity:0.8;">Address: <strong>${r.renter_address || 'N/A'}</strong></p>
+                </div>
+
                 <div style="background:rgba(255,255,255,0.05); padding:0.5rem; border-radius:4px; margin:0.5rem 0;">
                     <p style="margin:0; font-size:0.85rem;">Dates: <strong>${r.start_date}</strong> to <strong>${r.end_date}</strong></p>
                     <p style="margin:0; font-size:0.85rem;">Total: <strong style="color:var(--primary-color);">PKR ${r.total_price}</strong></p>
-                    <p style="margin:0; font-size:0.85rem;">Transaction ID: <strong>${r.transaction_id || 'N/A'}</strong></p>
                     <p style="margin:0; font-size:0.85rem;">Pickup Time: <strong>${r.pickup_time || 'N/A'}</strong></p>
                     ${proofLink}
                 </div>
-                <p style="margin-top:0.5rem; font-weight:bold; color:${badgeColor}; text-transform:uppercase; font-size:0.8rem;">Status: ${r.status}</p>
+                <p style="margin-top:0.5rem; font-weight:bold; color:${badgeColor}; text-transform:uppercase; font-size:0.8rem;">Status: ${r.status.replace('_', ' ')}</p>
             </div>
             
             ${pendingOnly ? `
