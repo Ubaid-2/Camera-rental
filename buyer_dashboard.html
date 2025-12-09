@@ -85,25 +85,11 @@
                     <p style="text-align: center; color: #94a3b8;">Your cart is empty.</p>
                 </div>
 
-                <!-- Checkout Controls (Hidden if empty) -->
-                <div id="cart-checkout-controls"
-                    style="max-width:800px; margin:2rem auto; display:none; background:var(--glass-bg); padding:1.5rem; border-radius:1rem; border:1px solid var(--glass-border);">
-                    <h4 style="margin-top:0;">Checkout</h4>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1rem;">
-                        <div class="form-group">
-                            <label>Start Date</label>
-                            <input type="date" id="cart-start-date" style="margin-bottom:0;">
-                        </div>
-                        <div class="form-group">
-                            <label>End Date</label>
-                            <input type="date" id="cart-end-date" style="margin-bottom:0;">
-                        </div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:1.2rem; font-weight:bold;">Total: <span
-                                style="color:var(--primary-color);" id="cart-total-display">PKR 0</span></span>
-                        <button onclick="checkoutCart()" class="btn btn-primary">Submit Request</button>
-                    </div>
+                <!-- Cart Footer (Proceed to Checkout Button) -->
+                <div id="cart-footer"
+                    style="max-width:800px; margin:2rem auto; display:none; justify-content:flex-end; border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem;">
+                    <button onclick="openCheckoutModal()" class="btn btn-primary"
+                        style="font-size:1.1rem; padding:0.8rem 2rem;">Proceed to Checkout</button>
                 </div>
             </div>
 
@@ -141,6 +127,75 @@
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
                 <button onclick="closeRentModal()" class="btn btn-outline">Cancel</button>
                 <button onclick="confirmRent()" class="btn btn-primary">Confirm Request</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHECKOUT MODAL -->
+    <div id="checkout-modal" class="modal" style="display:none;">
+        <div class="modal-content glass-panel large" style="margin:5% auto; max-width:600px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <h3 style="margin:0;">Rental Request</h3>
+                <button onclick="closeCheckoutModal()" class="close-modal"
+                    style="background:none; border:none; color:white; font-size:2rem; cursor:pointer;">&times;</button>
+            </div>
+
+            <!-- Step 1: Date & Time -->
+            <h4
+                style="border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem; color:var(--primary-color);">
+                1. Rental Schedule</h4>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" id="cart-start-date">
+                </div>
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="date" id="cart-end-date">
+                </div>
+                <div class="form-group">
+                    <label>Pickup Time</label>
+                    <input type="time" id="cart-pickup-time">
+                </div>
+            </div>
+
+            <div
+                style="background:rgba(255,255,255,0.05); padding:1rem; border-radius:8px; margin-bottom:1.5rem; text-align:right;">
+                <span style="font-size:1.1rem; opacity:0.8;">Estimated Total:</span>
+                <span id="modal-total-display"
+                    style="font-size:1.5rem; font-weight:bold; color:var(--primary-color); display:block;">PKR 0</span>
+            </div>
+
+            <!-- Step 2: Contact Details -->
+            <h4
+                style="border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.5rem; color:var(--primary-color);">
+                2. Your Contact Info</h4>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="cart-name" placeholder="Name on ID">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="cart-phone" placeholder="03XX-XXXXXXX">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Address / Pickup Location Preferences</label>
+                <textarea id="cart-address" rows="2"
+                    placeholder="Your residential address or preferred meetup spot."></textarea>
+            </div>
+
+            <div
+                style="background:rgba(255,200,100,0.1); padding:1rem; border-radius:8px; margin:1rem 0; border-left:3px solid #fbbf24;">
+                <p style="margin:0; font-size:0.9rem;"><strong>Note:</strong> Payment will be required AFTER the seller
+                    approves your request. You'll receive payment instructions once approved.</p>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:1rem; margin-top:2rem;">
+                <button onclick="closeCheckoutModal()" class="btn btn-outline">Cancel</button>
+                <button onclick="checkoutCart()" class="btn btn-primary" id="btn-confirm-checkout">Submit
+                    Request</button>
             </div>
         </div>
     </div>
