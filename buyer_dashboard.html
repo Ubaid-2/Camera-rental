@@ -14,7 +14,9 @@
     <!-- Sidebar -->
     <nav class="sidebar">
         <div class="sidebar-header">
-            <a href="index.html" class="sidebar-brand">LensLocker</a>
+            <a href="index.html" class="sidebar-brand">
+                <img src="logo.svg" alt="LensLocker" style="width: 150px; height: auto;">
+            </a>
         </div>
         <div class="sidebar-nav">
             <a href="index.html" class="nav-item">
@@ -48,14 +50,69 @@
 
     <div class="main-content">
         <div class="container">
-            <header style="margin-bottom: 3rem; text-align:center;">
-                <h2 style="margin-top:2rem;">Available Cameras</h2>
-                <p style="color: #94a3b8;">Browse premium gear available for rent.</p>
-                <div id="user-display" style="color: var(--primary-color); font-weight: 600; margin-top: 0.5rem;"></div>
+            <header style="margin-bottom: 2rem; text-align:center;">
+                <h2 style="margin-top:2rem;">Buyer Dashboard</h2>
+                <div id="user-display"
+                    style="color: var(--primary-color); font-weight: 600; margin-top: 0.5rem; margin-bottom: 1.5rem;">
+                </div>
+
+                <!-- Tabs -->
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button onclick="showBuyerSection('browse')" class="btn" id="btn-browse">Browse Gear</button>
+                    <button onclick="showBuyerSection('cart')" class="btn btn-outline" id="btn-cart">
+                        My Cart <span id="cart-badge"
+                            style="background:var(--primary-color); color:white; border-radius:50%; padding:2px 8px; font-size:0.8rem; display:none;">0</span>
+                    </button>
+                    <button onclick="showBuyerSection('rentals')" class="btn btn-outline" id="btn-rentals">My
+                        Requests</button>
+                </div>
             </header>
 
-            <div id="listings-container" class="grid">
-                <p style="color: #94a3b8;">Loading available cameras...</p>
+            <!-- Browse Section -->
+            <div id="section-browse">
+                <p style="text-align:center; color: #94a3b8; margin-bottom: 1rem;">Browse premium gear available for
+                    rent.</p>
+                <div id="listings-container" class="grid">
+                    <p style="color: #94a3b8;">Loading available cameras...</p>
+                </div>
+            </div>
+
+            <!-- Cart Section -->
+            <div id="section-cart" style="display: none;">
+                <h3 style="text-align:center; margin-bottom:1rem;">Your Cart</h3>
+                <div id="cart-container"
+                    style="max-width:800px; margin:0 auto; display:flex; flex-direction:column; gap:1rem;">
+                    <p style="text-align: center; color: #94a3b8;">Your cart is empty.</p>
+                </div>
+
+                <!-- Checkout Controls (Hidden if empty) -->
+                <div id="cart-checkout-controls"
+                    style="max-width:800px; margin:2rem auto; display:none; background:var(--glass-bg); padding:1.5rem; border-radius:1rem; border:1px solid var(--glass-border);">
+                    <h4 style="margin-top:0;">Checkout</h4>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                        <div class="form-group">
+                            <label>Start Date</label>
+                            <input type="date" id="cart-start-date" style="margin-bottom:0;">
+                        </div>
+                        <div class="form-group">
+                            <label>End Date</label>
+                            <input type="date" id="cart-end-date" style="margin-bottom:0;">
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:1.2rem; font-weight:bold;">Total: <span
+                                style="color:var(--primary-color);" id="cart-total-display">PKR 0</span></span>
+                        <button onclick="checkoutCart()" class="btn btn-primary">Submit Request</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Rentals Section -->
+            <div id="section-rentals" style="display: none;">
+                <div id="rentals-container"
+                    style="display:flex; flex-direction:column; gap:1rem; max-width:800px; margin:0 auto;">
+                    <p style="text-align: center; color: #94a3b8;">Loading my rentals...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -129,6 +186,7 @@
 
     <script src="config.js"></script>
     <script src="theme.js"></script>
+    <script src="security.js"></script>
     <script src="supabase-client.js"></script>
     <script src="auth.js"></script>
     <script src="buyer.js"></script>

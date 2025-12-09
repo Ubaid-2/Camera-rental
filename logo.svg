@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2E74B5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00BFA6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Icon: Camera Aperture + Lock -->
+  <g transform="translate(50, 50)">
+    <circle cx="0" cy="0" r="40" fill="none" stroke="url(#grad1)" stroke-width="4" />
+    <!-- Aperture Blades -->
+    <path d="M0,-35 L10,-10 L35,0 L10,10 L0,35 L-10,10 L-35,0 L-10,-10 Z" fill="#2E74B5" opacity="0.8" />
+    <!-- Lock Keyhole -->
+    <path d="M-6,0 A6,6 0 1,1 6,0 L2,15 L-2,15 Z" fill="white" transform="translate(0, 0)" />
+  </g>
+
+  <!-- Text -->
+  <text x="110" y="65" font-family="'Segoe UI', sans-serif" font-weight="bold" font-size="48" fill="#333">
+    Lens<tspan fill="#2E74B5">Locker</tspan>
+  </text>
+</svg>

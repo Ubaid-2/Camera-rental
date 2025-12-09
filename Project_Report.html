@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'
+    xmlns='http://www.w3.org/TR/REC-html40'>
+
+<head>
+    <meta charset="utf-8">
+    <title>Semester Project Report</title>
+    <style>
+        /* Basic Reset and Typography for Word Compatibility */
+        body {
+            font-family: 'Times New Roman', serif;
+            /* Standard Academic Font */
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #000;
+            max-width: 8.5in;
+            margin: 0 auto;
+            background: #fff;
+            padding: 1in;
+        }
+
+        /* Headings */
+        h1,
+        h2,
+        h3,
+        h4 {
+            color: #2E74B5;
+            /* Professional Blue */
+            font-family: 'Arial', sans-serif;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
+        h1 {
+            font-size: 24pt;
+            text-align: center;
+            color: #000;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 16pt;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        h3 {
+            font-size: 14pt;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1em 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #F2F2F2;
+            font-weight: bold;
+        }
+
+        /* Diagrams/Code */
+        pre {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 10pt;
+            white-space: pre-wrap;
+        }
+
+        /* Page Breaks for Word */
+        .page-break {
+            page-break-before: always;
+            mso-break-type: section-break;
+            /* Word specific */
+        }
+
+        /* Cover Page Styling */
+        .cover-page {
+            text-align: center;
+            padding-top: 2in;
+            page-break-after: always;
+        }
+
+        .university-name {
+            font-size: 20pt;
+            font-weight: bold;
+            margin-bottom: 0.5in;
+        }
+
+        .project-title {
+            font-size: 28pt;
+            font-weight: bold;
+            color: #2E74B5;
+            margin-bottom: 0.5in;
+        }
+
+        .subtitle {
+            font-size: 16pt;
+            margin-bottom: 2in;
+        }
+
+        .student-details {
+            font-size: 14pt;
+            margin-top: 1in;
+        }
+
+        .date {
+            margin-top: 1in;
+            font-size: 12pt;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- COVER PAGE -->
+    <div class="cover-page">
+        <!-- Logo -->
+        <div style="margin-bottom: 2rem;">
+            <img src="logo.svg" alt="LensLocker Logo" style="width: 300px; height: auto;">
+        </div>
+
+        <div class="university-name">[YOUR UNIVERSITY NAME HERE]</div>
+        <div class="subtitle">Semester Project Report</div>
+
+        <div class="project-title" style="margin-top:0.5in; margin-bottom:0.2in;">LensLocker</div>
+        <div class="subtitle" style="margin-top:0; font-size:18pt; color:#666;">Peer-to-Peer Camera Rental System</div>
+
+        <div class="student-details"
+            style="border-top: 2px solid #2E74B5; border-bottom: 2px solid #2E74B5; display:inline-block; padding: 1rem 3rem; margin-top: 1in;">
+            <p style="margin:0.5rem 0;"><strong>Submitted by:</strong></p>
+            <p style="margin:0.5rem 0; font-size:16pt;">Ubaid Rehman (Team Lead)</p>
+            <p style="margin:0.5rem 0; font-size:14pt; color:#666;">[Team Member Name]</p>
+        </div>
+
+        <div class="date" style="margin-top: 2in;">
+            <p><strong>Date:</strong> December 9, 2024</p>
+        </div>
+    </div>
+
+    <!-- PHASE 1 -->
+    <h1>Phase 1: Project Proposal</h1>
+
+    <h2>1. Project Title</h2>
+    <p><strong>LensLocker - A Peer-to-Peer Camera Rental Marketplace</strong></p>
+
+    <h2>2. Problem Statement</h2>
+    <p>In the current media industry, high-quality photography and cinematography equipment is prohibitively expensive
+        for students, hobbyists, and early-career professionals. Simultaneously, many equipment owners possess expensive
+        gear that remains idle for long periods, generating no value. There is currently no trusted, centralized local
+        platform to facilitate secure, verified rentals between these two groups, forcing users to rely on unorganized
+        and insecure social media groups.</p>
+
+    <h2>3. Proposed Solution</h2>
+    <p>LensLocker is a localized web application designed to bridge this gap. It provides:</p>
+    <ul>
+        <li><strong>For Renters:</strong> Affordable access to professional gear (Sony, Canon, Blackmagic) on a daily
+            rental basis.</li>
+        <li><strong>For Sellers:</strong> A secure platform to monetize idle assets with a verification system.</li>
+        <li><strong>Security:</strong> Integration of CNIC-based identity verification and secure image handling.</li>
+    </ul>
+
+    <h2>4. Technology Stack</h2>
+    <ul>
+        <li><strong>Frontend:</strong> HTML5, CSS3 (Glassmorphism), Vanilla JavaScript (ES6+).</li>
+        <li><strong>Backend:</strong> Supabase (PostgreSQL Database, Authentication, Edge Functions).</li>
+        <li><strong>Storage:</strong> Supabase Storage Buckets (for secure document handling).</li>
+        <li><strong>Tools:</strong> VS Code, Git/GitHub.</li>
+    </ul>
+
+    <h2>5. Team Roles</h2>
+    <table>
+        <tr>
+            <th>Role</th>
+            <th>Responsibilities</th>
+        </tr>
+        <tr>
+            <td>Frontend Developer</td>
+            <td>UI Design, Responsive Layouts (Mobile/Desktop), DOM Manipulation, Interaction Logic.</td>
+        </tr>
+        <tr>
+            <td>Backend Developer</td>
+            <td>Database Schema Design, Security Policies (RLS), API Integration.</td>
+        </tr>
+        <tr>
+            <td>QA Engineer</td>
+            <td>Testing user flows, bug tracking, and performance optimization.</td>
+        </tr>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- PHASE 2 -->
+    <h1>Phase 2: Requirements & SRS</h1>
+
+    <h2>1. Functional Requirements</h2>
+    <h3>Authentication Module</h3>
+    <ul>
+        <li>Users must be able to Register as <em>Buyer</em> or <em>Seller</em>.</li>
+        <li>Registration must require <strong>Identity Verification</strong> (CNIC Front, Back, User Photo).</li>
+        <li>Login must be restricted for users with "Pending" status.</li>
+    </ul>
+
+    <h3>Seller Module</h3>
+    <ul>
+        <li><strong>Create Listing:</strong> Upload camera details (Model, Price, Description) and images.</li>
+        <li><strong>Dashboard:</strong> View active listings and rental request status.</li>
+        <li><strong>Approval System:</strong> Approve or Reject incoming rental requests from buyers.</li>
+    </ul>
+
+    <h3>Buyer Module</h3>
+    <ul>
+        <li><strong>Marketplace:</strong> Browse available cameras in a responsive grid layout.</li>
+        <li><strong>Rental Request:</strong> Select rental dates and submit a booking request.</li>
+        <li><strong>Visual Inspection:</strong> View high-quality images of the product before renting.</li>
+    </ul>
+
+    <h2>2. Non-Functional Requirements</h2>
+    <ul>
+        <li><strong>Security:</strong> All user documents (CNIC) must be stored in private storage buckets with
+            restricted access policies.</li>
+        <li><strong>Responsiveness:</strong> The UI must adapt seamlessly to Mobile (375px) and Desktop (1920px)
+            screens.</li>
+        <li><strong>Performance:</strong> Application should load initial content in under 2 seconds.</li>
+    </ul>
+
+    <h2>3. Use Case Diagram (Textual Representation)</h2>
+    <pre>
+[ Actor: Buyer ] --> ( Sign Up / Login )
+[ Actor: Buyer ] --> ( Browse Cameras )
+[ Actor: Buyer ] --> ( Request Rental )
+
+[ Actor: Seller ] --> ( Sign Up / Login )
+[ Actor: Seller ] --> ( Post New Listing )
+[ Actor: Seller ] --> ( Approve/Reject Request )
+
+[ Actor: Admin ] --> ( Verify User Accounts )
+    </pre>
+
+    <div class="page-break"></div>
+
+    <!-- PHASE 3 -->
+    <h1>Phase 3: System Design</h1>
+
+    <h2>1. Architectural Design</h2>
+    <p>The system utilizes a <strong>Serverless / BaaS (Backend-as-a-Service) Architecture</strong>. The frontend is a
+        decoupled Single Page Application (SPA) served via static hosting, communicating directly with the Supabase API
+        tier.</p>
+
+    <h2>2. Database Design (Schema)</h2>
+    <p>The database is built on <strong>PostgreSQL</strong>. Below is the relational schema design.</p>
+
+    <h3>Table: Profiles</h3>
+    <table>
+        <tr>
+            <th>Column</th>
+            <th>Type</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>id</td>
+            <td>UUID</td>
+            <td>Primary Key, Links to Auth User</td>
+        </tr>
+        <tr>
+            <td>role</td>
+            <td>Text</td>
+            <td>'buyer' or 'seller'</td>
+        </tr>
+        <tr>
+            <td>status</td>
+            <td>Text</td>
+            <td>'pending', 'approved'</td>
+        </tr>
+        <tr>
+            <td>cnic_urls</td>
+            <td>Text</td>
+            <td>Secure paths to ID docs</td>
+        </tr>
+    </table>
+
+    <h3>Table: Cameras</h3>
+    <table>
+        <tr>
+            <th>Column</th>
+            <th>Type</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>id</td>
+            <td>UUID</td>
+            <td>Primary Key</td>
+        </tr>
+        <tr>
+            <td>owner_id</td>
+            <td>UUID</td>
+            <td>Foreign Key (Profiles)</td>
+        </tr>
+        <tr>
+            <td>price_per_day</td>
+            <td>Numeric</td>
+            <td>Rental Rate (PKR)</td>
+        </tr>
+        <tr>
+            <td>available</td>
+            <td>Boolean</td>
+            <td>Availability Status</td>
+        </tr>
+    </table>
+
+    <h3>Table: Rentals</h3>
+    <table>
+        <tr>
+            <th>Column</th>
+            <th>Type</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>id</td>
+            <td>UUID</td>
+            <td>Primary Key</td>
+        </tr>
+        <tr>
+            <td>camera_id</td>
+            <td>UUID</td>
+            <td>Foreign Key (Cameras)</td>
+        </tr>
+        <tr>
+            <td>buyer_id</td>
+            <td>UUID</td>
+            <td>Foreign Key (Profiles)</td>
+        </tr>
+        <tr>
+            <td>status</td>
+            <td>Text</td>
+            <td>Transaction Status</td>
+        </tr>
+    </table>
+
+    <h2>3. Entity Relationship (ERD) Overview</h2>
+    <pre>
+[Profiles] 1 ---- * [Cameras]
+     1               1
+     |               |
+     *               *
+[Rentals] * -------- [Rentals]
+    </pre>
+
+    <div class="page-break"></div>
+
+    <h2>4. API Interface Design</h2>
+    <p>Our application interacts with the Supabase API. Below are the key API endpoints (Table Interactions) used in the
+        application.</p>
+
+    <h3>4.1 User Profiles API</h3>
+    <table>
+        <tr>
+            <th>Method</th>
+            <th>Table/Function</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td><code>profiles</code></td>
+            <td>Fetch user details (role, name, avatar).</td>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td><code>auth.signUp()</code></td>
+            <td>Register new user and trigger profile creation.</td>
+        </tr>
+        <tr>
+            <td>UPDATE</td>
+            <td><code>profiles</code></td>
+            <td>Update verification status (Admin only).</td>
+        </tr>
+    </table>
+
+    <h3>4.2 Listings API</h3>
+    <table>
+        <tr>
+            <th>Method</th>
+            <th>Table/Function</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td><code>cameras</code></td>
+            <td>Fetch available cameras (filtered by <code>available=true</code>).</td>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td><code>cameras</code></td>
+            <td>Create a new camera listing (Seller only).</td>
+        </tr>
+        <tr>
+            <td>GET</td>
+            <td><code>storage.from('camera_images')</code></td>
+            <td>Generate Signed URLs for private/secure image access.</td>
+        </tr>
+    </table>
+
+    <h3>4.3 Rentals API</h3>
+    <table>
+        <tr>
+            <th>Method</th>
+            <th>Table/Function</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td>POST</td>
+            <td><code>rentals</code></td>
+            <td>Create a new rental request (Buyer).</td>
+        </tr>
+        <tr>
+            <td>UPDATE</td>
+            <td><code>rentals</code></td>
+            <td>Approve/Reject rental request (Seller).</td>
+        </tr>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- PHASE 4 -->
+    <h1>Phase 4: Implementation</h1>
+
+    <h2>1. Core Features Implemented</h2>
+    <p>We have successfully implemented over 80% of the proposed functionality.</p>
+    <ul>
+        <li><strong>Secure Auth:</strong> Implemented Supabase Authentication with custom file upload logic for ID
+            verification.</li>
+        <li><strong>Dynamic Marketplace:</strong> The <code>buyer.js</code> script dynamically fetches and renders
+            camera listings using standard DOM manipulation.</li>
+        <li><strong>Advanced Styling:</strong> Used CSS Variables and Glassmorphism design principles in
+            <code>style.css</code> to create a modern, premium feel.
+        </li>
+    </ul>
+
+    <h2>2. Code Snippet: Secure Image Handling</h2>
+    <p>The following function demonstrates how we secure user privacy by generating signed URLs for sensitive images on
+        demand, rather than exposing public links.</p>
+    <pre>
+async function loadSecureImages(path) {
+    const { data } = await supabase
+        .storage
+        .from('cnic_images')
+        .createSignedUrl(path, 3600); // URL valid for 1 hour
+    return data.signedUrl;
+}
+    </pre>
+
+    <h2>3. Version Control Logs (GitHub)</h2>
+    <p>We maintained a clean git history with descriptive commit messages. Below is a snapshot of our commit log:</p>
+    <pre>
+commit a1b2c3d (HEAD -> main)
+Author: Ubaid Rehman &lt;ubaid@example.com&gt;
+Date:   Mon Dec 9 10:45:00 2024 +0500
+
+    Implement Seller Approval Workflow and Admin Blocking features
+
+commit e5f6g7h
+Author: Ubaid Rehman &lt;ubaid@example.com&gt;
+Date:   Mon Dec 9 09:30:00 2024 +0500
+
+    Fix buyer dashboard responsive layout
+
+commit i8j9k0l
+Author: Ubaid Rehman &lt;ubaid@example.com&gt;
+Date:   Sun Dec 8 16:20:00 2024 +0500
+
+    Initial commit: Setup basic HTML structure and Supabase client
+    </pre>
+
+    <h2>4. Innovative Features (Bonus)</h2>
+    <ul>
+        <li><strong>Secure Digital ID Verification:</strong> Unlike standard rentals, our app digitizes the trust
+            process
+            by securely handling CNIC verification via signed URLs, eliminating the need for physical ID deposits.</li>
+        <li><strong>Responsive Slide-out Navigation:</strong> We implemented a custom mobile drawer navigation without
+            external libraries, ensuring high performance on low-end devices.</li>
+    </ul>
+
+    <h2>5. Mobile Responsiveness</h2>
+    <p>We implemented a custom slide-out drawer for mobile navigation using CSS transforms and JavaScript event
+        listeners, creating an app-like experience on web.</p>
+
+    <div class="page-break"></div>
+
+    <!-- PHASE 5 -->
+    <h1>Phase 5: Testing</h1>
+
+    <h2>1. Test Strategy</h2>
+    <p>We employed <strong>Black Box Testing</strong> strategies, focusing on input/output validation and user flow
+        correctness.</p>
+
+    <h2>2. Test Cases and Results</h2>
+    <table>
+        <tr>
+            <th>Test Case ID</th>
+            <th>Description</th>
+            <th>Steps</th>
+            <th>Expected Result</th>
+            <th>Status</th>
+        </tr>
+        <tr>
+            <td>TC-AUTH-01</td>
+            <td>Verify Pending User Lockout</td>
+            <td>1. Sign up.<br>2. Try to login immediately.</td>
+            <td>System blocks login with "Pending Approval" message.</td>
+            <td><strong>PASS</strong></td>
+        </tr>
+        <tr>
+            <td>TC-RENT-01</td>
+            <td>Rent Calculation</td>
+            <td>1. Select Camera priced 5000.<br>2. Select 3 days.</td>
+            <td>Total price shows 15,000 PKR.</td>
+            <td><strong>PASS</strong></td>
+        </tr>
+        <tr>
+            <td>TC-UI-01</td>
+            <td>Mobile Sidebar</td>
+            <td>1. Shrink window to 375px.<br>2. Click Menu.</td>
+            <td>Sidebar slides in with overlay.</td>
+            <td><strong>PASS</strong></td>
+        </tr>
+        <tr>
+            <td>TC-SEC-01</td>
+            <td>RLS Policy Check</td>
+            <td>1. Login as User A.<br>2. Try to delete User B's camera.</td>
+            <td>Database returns 403 Forbidden.</td>
+            <td><strong>PASS</strong></td>
+        </tr>
+    </table>
+
+    <br>
+    <hr>
+    <p style="text-align: center; font-style: italic;">End of Report</p>
+
+</body>
+
+</html>

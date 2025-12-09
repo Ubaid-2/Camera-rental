@@ -1,4 +1,3 @@
-// C:\Users\hp\.gemini\antigravity\scratch\camera-rental-system\buyer.js
 
 // Check auth
 async function checkAuth() {
@@ -9,9 +8,51 @@ async function checkAuth() {
     }
     document.getElementById('user-display').textContent = session.user.email;
     loadMarketplace();
+    updateCartBadge(); // Init badge
 }
 
-// Load marketplace with SECURE SIGNED URLs
+// Global Cart State
+let CART = JSON.parse(localStorage.getItem('lenslocker_cart')) || [];
+
+function saveCart() {
+    localStorage.setItem('lenslocker_cart', JSON.stringify(CART));
+    updateCartBadge();
+}
+
+function updateCartBadge() {
+    const badge = document.getElementById('cart-badge');
+    if (CART.length > 0) {
+        badge.style.display = 'inline-block';
+        badge.innerText = CART.length;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function addToCart(cam) {
+    if (CART.find(item => item.id === cam.id)) {
+        alert("This item is already in your cart!");
+        return;
+    }
+
+    CART.push(cam);
+    saveCart();
+
+    // Animate badge
+    const badge = document.getElementById('cart-badge');
+    badge.classList.add('pulse');
+    setTimeout(() => badge.classList.remove('pulse'), 500);
+
+    alert("Added to cart!");
+}
+
+function removeFromCart(camId) {
+    CART = CART.filter(item => item.id !== camId);
+    saveCart();
+    loadCart(); // Refresh view
+}
+
+// Load marketplace with SECURE SIGNED URLs and Add to Cart button
 async function loadMarketplace() {
     const container = document.getElementById('listings-container');
 
@@ -71,6 +112,12 @@ async function loadMarketplace() {
 
     container.innerHTML = camerasWithUrls.map(cam => {
         const owner = ownerMap[cam.owner_id] || { name: 'Unknown', avatar: '' };
+
+        // Defense in Depth: Sanitize before display
+        const safeOwnerName = sanitizeInput(owner.name);
+        const safeCamName = sanitizeInput(cam.name);
+        const safeCamDesc = sanitizeInput(cam.description);
+
         return `
         <div class="card" style="cursor:pointer; position:relative;">
             <!-- Seller Badge -->
@@ -78,17 +125,20 @@ async function loadMarketplace() {
                  style="position:absolute; top:10px; left:10px; display:flex; align-items:center; gap:8px; background:rgba(0,0,0,0.6); padding:4px 10px 4px 4px; border-radius:20px; backdrop-filter:blur(4px); z-index:10; transition: transform 0.2s;"
                  onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                 <img src="${owner.avatar}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; border:2px solid white;">
-                <span style="color:white; font-size:0.8rem; font-weight:600;">${owner.name}</span>
+                <span style="color:white; font-size:0.8rem; font-weight:600;">${safeOwnerName}</span>
             </div>
 
             <div onclick='openProductDetails(${JSON.stringify(cam).replace(/'/g, "&#39;")})'>
-                <img src="${cam.signedUrl}" alt="${cam.name}" style="height:200px; object-fit:cover;">
+                <img src="${cam.signedUrl}" alt="${safeCamName}" style="height:200px; object-fit:cover;">
                 <div class="card-body">
-                    <h3>${cam.name}</h3>
-                    <p style="color: var(--text-color); opacity: 0.8; min-height: 3rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${cam.description}</p>
+                    <h3>${safeCamName}</h3>
+                    <p style="color: var(--text-color); opacity: 0.8; min-height: 3rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${safeCamDesc}</p>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
                         <span style="font-weight: 700; color: var(--primary-color); font-size: 1.2rem;">PKR ${cam.price_per_day} <span style="font-size: 0.9rem; opacity: 0.7;">/ day</span></span>
-                        <button class="btn btn-outline" style="padding: 0.5rem 1rem;">View Details</button>
+                    </div>
+                    <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+                         <button onclick="event.stopPropagation(); addToCart(${JSON.stringify(cam).replace(/'/g, "&#39;")})" class="btn btn-primary" style="flex:1; padding: 0.5rem;">Add to Cart</button>
+                         <button class="btn btn-outline" style="padding: 0.5rem;">Details</button>
                     </div>
                 </div>
             </div>
@@ -105,11 +155,12 @@ async function openProductDetails(cam) {
     document.getElementById('detail-price').innerText = `PKR ${cam.price_per_day} / day`;
     document.getElementById('detail-desc').innerText = cam.description;
 
-    // Set Rent Button Action
+    // Set Rent Button Action -> Add To Cart
     const rentBtn = document.getElementById('detail-rent-btn');
+    rentBtn.innerText = "Add to Cart";
     rentBtn.onclick = () => {
+        addToCart(cam);
         closeProductModal();
-        openRentModal(cam.id, cam.name, cam.price_per_day);
     };
 
     // Load Images (Cover + Gallery)
@@ -171,70 +222,192 @@ function closeRentModal() {
     document.getElementById('rent-modal').style.display = 'none';
 }
 
-// Global modal helpers
-window.openRentModal = (id, name, price) => {
-    document.getElementById('rent-camera-id').value = id;
-    document.getElementById('rent-camera-name').textContent = name;
-    document.getElementById('rent-camera-price').value = price;
-    document.getElementById('rent-modal').style.display = 'block';
-    updateTotal();
-};
+// Tab Switching (Updated)
+function showBuyerSection(section) {
+    document.getElementById('section-browse').style.display = section === 'browse' ? 'block' : 'none';
+    document.getElementById('section-rentals').style.display = section === 'rentals' ? 'block' : 'none';
+    document.getElementById('section-cart').style.display = section === 'cart' ? 'block' : 'none';
 
-window.closeRentModal = closeRentModal;
+    const btnBrowse = document.getElementById('btn-browse');
+    const btnRentals = document.getElementById('btn-rentals');
+    const btnCart = document.getElementById('btn-cart');
 
-// Calculate price on date change
-// Calculate price logic
-function updateTotal() {
-    const days = document.getElementById('rent-days').value;
-    const priceStr = document.getElementById('rent-camera-price').value;
+    // Reset all
+    btnBrowse.classList.add('btn-outline');
+    btnRentals.classList.add('btn-outline');
+    btnCart.classList.add('btn-outline');
 
-    if (days && priceStr) {
-        const pricePerDay = parseFloat(priceStr);
-        const total = Math.ceil(days * pricePerDay);
-        document.getElementById('total-price').textContent = `PKR ${total.toFixed(2)}`;
-        // Also update modal display if needed
-        const modalTotal = document.getElementById('modal-total-price');
-        if (modalTotal) modalTotal.textContent = total.toFixed(2);
+    if (section === 'browse') {
+        btnBrowse.classList.remove('btn-outline');
+    } else if (section === 'rentals') {
+        btnRentals.classList.remove('btn-outline');
+        loadMyRentals();
+    } else if (section === 'cart') {
+        btnCart.classList.remove('btn-outline');
+        loadCart();
     }
 }
 
-// Attach listener
-const rentDaysInput = document.getElementById('rent-days');
-if (rentDaysInput) {
-    rentDaysInput.addEventListener('change', updateTotal);
-    rentDaysInput.addEventListener('input', updateTotal);
-}
+// Cart Logic
+async function loadCart() {
+    const container = document.getElementById('cart-container');
+    const controls = document.getElementById('cart-checkout-controls');
 
-async function confirmRent() {
-    const camId = document.getElementById('rent-camera-id').value;
-    const start = document.getElementById('start-date').value;
-    const end = document.getElementById('end-date').value;
-    const totalStr = document.getElementById('total-price').textContent.replace('PKR ', '');
-
-    if (!start || !end) {
-        alert("Please select dates");
+    if (CART.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:3rem;"><span class="material-icons-round" style="font-size:3rem; color:#94a3b8;">shopping_cart</span><p style="color:#94a3b8; margin-top:1rem;">Your cart is empty. Start browsing!</p></div>';
+        controls.style.display = 'none';
         return;
     }
 
+    controls.style.display = 'block';
+
+    // We already have signed URLs in the CART object (from loadMarketplace)
+    // But they might expire if the user waits too long. Ideally we re-sign them, but for prototype let's assume they work 
+    // or just show placeholders if needed. 
+    // To be safe, let's just use the cart data.
+
+    container.innerHTML = CART.map(cam => `
+        <div class="glass-panel" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;">
+            <img src="${cam.signedUrl}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+            <div style="flex: 1;">
+                <h4 style="margin: 0;">${cam.name}</h4>
+                <p style="margin: 0; color: var(--primary-color);">PKR ${cam.price_per_day} / day</p>
+            </div>
+            <button onclick="removeFromCart('${cam.id}')" class="btn btn-outline" style="border-color:#ef4444; color:#ef4444;">Remove</button>
+        </div>
+    `).join('');
+
+    updateCartTotal();
+}
+
+function updateCartTotal() {
+    const start = document.getElementById('cart-start-date').value;
+    const end = document.getElementById('cart-end-date').value;
+    const display = document.getElementById('cart-total-display');
+
+    if (!start || !end) {
+        display.innerText = "PKR 0 (Select Dates)";
+        return;
+    }
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffTime = Math.abs(endDate - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 0) {
+        display.innerText = "Invalid Dates";
+        return;
+    }
+
+    let totalPerDay = CART.reduce((sum, item) => sum + parseFloat(item.price_per_day), 0);
+    let grandTotal = totalPerDay * diffDays;
+
+    display.innerText = `PKR ${grandTotal.toLocaleString()}`;
+}
+
+// Add listeners to date inputs
+const cartStart = document.getElementById('cart-start-date');
+const cartEnd = document.getElementById('cart-end-date');
+if (cartStart && cartEnd) {
+    cartStart.addEventListener('change', updateCartTotal);
+    cartEnd.addEventListener('change', updateCartTotal);
+}
+
+async function checkoutCart() {
+    const start = document.getElementById('cart-start-date').value;
+    const end = document.getElementById('cart-end-date').value;
+
+    if (!start || !end) {
+        alert("Please select start and end dates for your rental.");
+        return;
+    }
+
+    if (new Date(start) >= new Date(end)) {
+        alert("End date must be after start date.");
+        return;
+    }
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffDays = Math.ceil(Math.abs(endDate - startDate) / (1000 * 60 * 60 * 24));
+
+    // Prepare Batch Insert
     const { data: { user } } = await sb.auth.getUser();
 
-    const { error } = await sb
-        .from('rentals')
-        .insert([{
-            camera_id: camId,
-            buyer_id: user.id,
-            start_date: start,
-            end_date: end,
-            total_price: parseFloat(totalStr),
-            status: 'pending'
-        }]);
+    const rentalRecords = CART.map(cam => ({
+        camera_id: cam.id,
+        buyer_id: user.id,
+        start_date: start,
+        end_date: end,
+        total_price: parseFloat(cam.price_per_day) * diffDays,
+        status: 'pending'
+    }));
+
+    // Insert
+    const { error } = await sb.from('rentals').insert(rentalRecords);
 
     if (error) {
-        alert("Error requesting rental: " + error.message);
+        alert("Checkout failed: " + error.message);
     } else {
-        alert("Rental request sent! Wait for seller approval.");
-        hideRentModal();
+        alert("Rental requests sent successfully!");
+        CART = [];
+        saveCart();
+        showBuyerSection('rentals'); // Go to requests view
     }
+}
+
+// Load My Rentals
+async function loadMyRentals() {
+    const container = document.getElementById('rentals-container');
+    container.innerHTML = '<p style="text-align: center; color: #94a3b8;">Loading rentals...</p>';
+
+    const { data: { user } } = await sb.auth.getUser();
+
+    const { data: rentals, error } = await sb
+        .from('rentals')
+        .select(`
+            *,
+            cameras!inner(*)
+        `)
+        .eq('buyer_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        container.innerHTML = `<p style="color: red">Error: ${error.message}</p>`;
+        return;
+    }
+
+    if (!rentals || rentals.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color: #94a3b8;">You haven\'t made any rental requests yet.</p>';
+        return;
+    }
+
+    container.innerHTML = rentals.map(r => {
+        const camName = r.cameras ? r.cameras.name : 'Unknown Camera';
+
+        let badgeColor = 'orange';
+        if (r.status === 'approved') badgeColor = 'green';
+        if (r.status === 'rejected') badgeColor = 'red';
+        if (r.status === 'completed') badgeColor = 'blue';
+
+        return `
+        <div class="glass-panel" style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h4 style="margin:0 0 0.5rem 0;">${camName}</h4>
+                <p style="margin:0; font-size:0.9rem; opacity:0.8;">Dates: ${r.start_date} to ${r.end_date}</p>
+                <p style="margin:0; font-size:0.9rem; opacity:0.8;">Total: <strong style="color:var(--primary-color);">PKR ${r.total_price}</strong></p>
+                <p style="margin-top:0.5rem; font-weight:bold; color:${badgeColor}; text-transform:uppercase; font-size:0.8rem;">Status: ${r.status}</p>
+            </div>
+            ${r.status === 'approved' ? `
+            <div style="background:rgba(34, 197, 94, 0.1); padding:0.5rem 1rem; border-radius:4px; color:#22c55e; border:1px solid #22c55e;">
+                <span class="material-icons-round" style="vertical-align:middle; font-size:1.2rem; margin-right:4px;">check_circle</span>
+                Ready for Pickup
+            </div>
+            ` : ''}
+        </div>
+        `;
+    }).join('');
 }
 
 async function handleLogout() {

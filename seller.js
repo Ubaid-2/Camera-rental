@@ -1,4 +1,3 @@
-// C:\Users\hp\.gemini\antigravity\scratch\camera-rental-system\seller.js
 
 // Check auth
 async function checkAuth() {
@@ -97,12 +96,22 @@ async function addCamera() {
     const coverInput = document.getElementById('camera-image-file'); // Main Cover
     const galleryInput = document.getElementById('gallery-files');   // Gallery
 
+    // Sanitize Inputs
+    const cleanName = sanitizeInput(name);
+    const cleanDesc = sanitizeInput(desc);
+
     const coverFile = coverInput.files[0];
     const galleryFiles = galleryInput.files;
 
-    if (!name || !price || !coverFile) {
+    if (!cleanName || !price || !coverFile) {
         alert("Please fill in fields and upload at least a Cover Photo.");
         return;
+    }
+
+    // Security: Validate Image File Type/Size
+    if (!validateImageFile(coverFile)) return;
+    for (let i = 0; i < galleryFiles.length; i++) {
+        if (!validateImageFile(galleryFiles[i])) return;
     }
 
     if (galleryFiles.length > 8) {
@@ -132,8 +141,8 @@ async function addCamera() {
             .from('cameras')
             .insert([{
                 owner_id: user.id,
-                name: name,
-                description: desc,
+                name: cleanName,
+                description: cleanDesc,
                 price_per_day: price,
                 image_url: coverName // Main Cover Path
             }])
@@ -201,7 +210,10 @@ window.updateCamera = async () => {
     const desc = document.getElementById('edit-camera-desc').value;
     const price = document.getElementById('edit-camera-price').value;
 
-    if (!name || !price) {
+    const cleanName = sanitizeInput(name);
+    const cleanDesc = sanitizeInput(desc);
+
+    if (!cleanName || !price) {
         alert("Name and Price are required.");
         return;
     }
@@ -215,8 +227,8 @@ window.updateCamera = async () => {
         const { error } = await sb
             .from('cameras')
             .update({
-                name: name,
-                description: desc,
+                name: cleanName,
+                description: cleanDesc,
                 price_per_day: price
             })
             .eq('id', id);
@@ -238,6 +250,150 @@ window.updateCamera = async () => {
         startBtn.disabled = false;
     }
 };
+
+// Tab Switching
+function showSellerSection(section) {
+    document.getElementById('section-listings').style.display = 'none';
+    document.getElementById('section-requests').style.display = 'none';
+    document.getElementById('section-history').style.display = 'none';
+
+    document.getElementById('btn-listings').classList.add('btn-outline');
+    document.getElementById('btn-requests').classList.add('btn-outline');
+    document.getElementById('btn-history').classList.add('btn-outline');
+
+    document.getElementById('btn-add-new').style.display = 'none';
+
+    if (section === 'listings') {
+        document.getElementById('section-listings').style.display = 'grid';
+        document.getElementById('btn-listings').classList.remove('btn-outline');
+        document.getElementById('btn-add-new').style.display = 'block';
+
+    } else if (section === 'requests') {
+        document.getElementById('section-requests').style.display = 'block';
+        document.getElementById('btn-requests').classList.remove('btn-outline');
+        loadRentalRequests(true); // Load only pending
+
+    } else if (section === 'history') {
+        document.getElementById('section-history').style.display = 'block';
+        document.getElementById('btn-history').classList.remove('btn-outline');
+        loadRentalRequests(false); // Load history
+    }
+}
+
+// Load Rental Requests (Filtered)
+async function loadRentalRequests(pendingOnly) {
+    const containerId = pendingOnly ? 'requests-container' : 'history-container';
+    const container = document.getElementById(containerId);
+
+    container.innerHTML = '<p style="text-align: center; color: #94a3b8;">Loading...</p>';
+
+    const { data: { user } } = await sb.auth.getUser();
+
+    // Fetch rentals for cameras owned by this user
+    let query = sb
+        .from('rentals')
+        .select(`
+            *,
+            cameras!inner(*),
+            profiles:buyer_id(*)
+        `)
+        .eq('cameras.owner_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (pendingOnly) {
+        query = query.eq('status', 'pending');
+    } else {
+        query = query.neq('status', 'pending');
+    }
+
+    const { data: rentals, error } = await query;
+
+    if (error) {
+        container.innerHTML = `<p style="color: red">Error: ${error.message}</p>`;
+        return;
+    }
+
+    if (!rentals || rentals.length === 0) {
+        container.innerHTML = `<p style="color: #94a3b8;">No ${pendingOnly ? 'pending requests' : 'rental history'} found.</p>`;
+        return;
+    }
+
+    container.innerHTML = rentals.map(r => {
+        const buyerName = r.profiles ? (r.profiles.full_name || r.profiles.email) : 'Unknown Buyer';
+        const camName = r.cameras ? r.cameras.name : 'Unknown Camera';
+
+        // Status badge colors
+        let badgeColor = 'orange';
+        if (r.status === 'approved') badgeColor = 'green';
+        if (r.status === 'rejected') badgeColor = 'red';
+        if (r.status === 'completed') badgeColor = 'blue';
+
+        // Generate Signed URL for proof if exists
+        // Note: As discussed in schema, we assume authenticated users can view proofs for prototype simplicity.
+        // Ideally we generate a signed URL here if the bucket was private-private.
+        // Since we used a policy 'Authenticated Users can view', we can construct the public URL or use createSignedUrl.
+        // Let's use createSignedUrl to be safe/consistent with best practices.
+
+        let proofLink = '';
+        if (r.payment_proof_url) {
+            // We do this async inside map... wait this is messy. 
+            // Better to just show a "View Proof" button that calls a function to open it.
+            proofLink = `<button onclick="viewPaymentProof('${r.payment_proof_url}')" style="background:none; border:none; text-decoration:underline; color:var(--primary-color); cursor:pointer; font-size:0.9rem;">View Payment Proof</button>`;
+        }
+
+        return `
+        <div class="glass-panel" style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h4 style="margin:0 0 0.5rem 0;">Request for <strong>${camName}</strong></h4>
+                <p style="margin:0; font-size:0.9rem; opacity:0.8;">Buyer: <strong>${buyerName}</strong></p>
+                <div style="background:rgba(255,255,255,0.05); padding:0.5rem; border-radius:4px; margin:0.5rem 0;">
+                    <p style="margin:0; font-size:0.85rem;">Dates: <strong>${r.start_date}</strong> to <strong>${r.end_date}</strong></p>
+                    <p style="margin:0; font-size:0.85rem;">Total: <strong style="color:var(--primary-color);">PKR ${r.total_price}</strong></p>
+                    <p style="margin:0; font-size:0.85rem;">Transaction ID: <strong>${r.transaction_id || 'N/A'}</strong></p>
+                    <p style="margin:0; font-size:0.85rem;">Pickup Time: <strong>${r.pickup_time || 'N/A'}</strong></p>
+                    ${proofLink}
+                </div>
+                <p style="margin-top:0.5rem; font-weight:bold; color:${badgeColor}; text-transform:uppercase; font-size:0.8rem;">Status: ${r.status}</p>
+            </div>
+            
+            ${pendingOnly ? `
+            <div style="display:flex; gap:0.5rem; align-self: center;">
+                <button onclick="updateRentalStatus('${r.id}', 'approved')" style="background:#22c55e; color:white; border:none; padding:0.5rem 1rem; border-radius:4px; cursor:pointer;">Approve</button>
+                <button onclick="updateRentalStatus('${r.id}', 'rejected')" style="background:#ef4444; color:white; border:none; padding:0.5rem 1rem; border-radius:4px; cursor:pointer;">Reject</button>
+            </div>
+            ` : ''}
+        </div>
+        `;
+    }).join('');
+}
+
+// Helper to open proof
+async function viewPaymentProof(path) {
+    if (!path) return;
+    try {
+        const { data, error } = await sb.storage.from('payment_proofs').createSignedUrl(path, 3600);
+        if (error) throw error;
+        window.open(data.signedUrl, '_blank');
+    } catch (err) {
+        alert("Error loading proof: " + err.message);
+    }
+}
+
+async function updateRentalStatus(rentalId, newStatus) {
+    if (!confirm(`Are you sure you want to ${newStatus} this request?`)) return;
+
+    const { error } = await sb
+        .from('rentals')
+        .update({ status: newStatus })
+        .eq('id', rentalId);
+
+    if (error) {
+        alert("Error updating status: " + error.message);
+    } else {
+        alert(`Request ${newStatus} successfully.`);
+        loadRentalRequests(true); // Refresh pending list
+    }
+}
 
 async function handleLogout() {
     await sb.auth.signOut();
