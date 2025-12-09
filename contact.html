@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - LensLocker</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-brand">LensLocker</a>
+        </div>
+        <div class="sidebar-nav">
+            <a href="index.html" class="nav-item">
+                <span class="material-icons-round">home</span>
+                <span class="nav-text">Home</span>
+            </a>
+            <a href="about.html" class="nav-item">
+                <span class="material-icons-round">info</span>
+                <span class="nav-text">About Us</span>
+            </a>
+            <a href="contact.html" class="nav-item active">
+                <span class="material-icons-round">contact_support</span>
+                <span class="nav-text">Contact Us</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <span class="material-icons-round">settings</span>
+                <span class="nav-text">Settings</span>
+            </a>
+            <div style="margin-top: auto;"></div>
+            <a href="seller_login.html" class="nav-item">
+                <span class="material-icons-round">storefront</span>
+                <span class="nav-text">Seller Portal</span>
+            </a>
+            <a href="buyer_login.html" class="nav-item btn-primary">
+                <span class="material-icons-round">login</span>
+                <span class="nav-text">Login</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container" style="max-width: 800px; margin-top: 4rem;">
+            <h1>Get in Touch</h1>
+            <p style="color: #94a3b8; margin-bottom: 3rem;">Have questions about renting or listing? We're here to help.
+            </p>
+
+            <div class="card" style="padding: 3rem;">
+                <form>
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="john@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <select id="subject">
+                            <option value="rental">Rental Inquiry</option>
+                            <option value="seller">Seller Support</option>
+                            <option value="technical">Technical Issue</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" rows="5" placeholder="How can we help you?"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+            </div>
+
+            <div
+                style="margin-top: 4rem; display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));;">
+                <div class="feature-card">
+                    <span class="material-icons-round feature-icon">email</span>
+                    <h3>Email Us</h3>
+                    <p style="color: #94a3b8;">support@lenslocker.com</p>
+                </div>
+                <div class="feature-card">
+                    <span class="material-icons-round feature-icon">phone</span>
+                    <h3>Call Us</h3>
+                    <p style="color: #94a3b8;">+1 (555) 123-4567</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="theme.js"></script>
+</body>
+
+</html>

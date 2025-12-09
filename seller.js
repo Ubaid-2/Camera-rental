@@ -52,8 +52,9 @@ async function loadListings(userId) {
             <div class="card-body">
                 <h3>${cam.name}</h3>
                 <p style="color: var(--text-color); opacity: 0.8;">${cam.description}</p>
-                <div style="font-weight: 700; color: var(--primary-color); margin-top: 1rem;">
-                    $${cam.price_per_day} / day
+                <div style="font-weight: 700; color: var(--primary-color); margin-top: 1rem; display:flex; justify-content:space-between; align-items:center;">
+                    <span>PKR ${cam.price_per_day} / day</span>
+                    <button onclick='openEditModal(${JSON.stringify(cam).replace(/'/g, "&#39;")})' class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.8rem;">Edit</button>
                 </div>
             </div>
         </div>
@@ -180,6 +181,63 @@ async function addCamera() {
 
 function showAddModal() { document.getElementById('add-modal').style.display = 'block'; }
 function hideAddModal() { document.getElementById('add-modal').style.display = 'none'; }
+
+// Edit Modal Functions
+window.openEditModal = (cam) => {
+    document.getElementById('edit-camera-id').value = cam.id;
+    document.getElementById('edit-camera-name').value = cam.name;
+    document.getElementById('edit-camera-desc').value = cam.description;
+    document.getElementById('edit-camera-price').value = cam.price_per_day;
+    document.getElementById('edit-modal').style.display = 'block';
+};
+
+window.hideEditModal = () => {
+    document.getElementById('edit-modal').style.display = 'none';
+};
+
+window.updateCamera = async () => {
+    const id = document.getElementById('edit-camera-id').value;
+    const name = document.getElementById('edit-camera-name').value;
+    const desc = document.getElementById('edit-camera-desc').value;
+    const price = document.getElementById('edit-camera-price').value;
+
+    if (!name || !price) {
+        alert("Name and Price are required.");
+        return;
+    }
+
+    const startBtn = document.querySelector('button[onclick="updateCamera()"]');
+    const originalText = startBtn.textContent;
+    startBtn.textContent = "Saving...";
+    startBtn.disabled = true;
+
+    try {
+        const { error } = await sb
+            .from('cameras')
+            .update({
+                name: name,
+                description: desc,
+                price_per_day: price
+            })
+            .eq('id', id);
+
+        if (error) throw error;
+
+        alert("Details updated successfully!");
+        hideEditModal();
+
+        // Refresh listings
+        const { data: { user } } = await sb.auth.getUser();
+        loadListings(user.id);
+
+    } catch (err) {
+        alert("Error updating: " + err.message);
+        console.error(err);
+    } finally {
+        startBtn.textContent = originalText;
+        startBtn.disabled = false;
+    }
+};
 
 async function handleLogout() {
     await sb.auth.signOut();

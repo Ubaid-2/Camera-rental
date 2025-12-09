@@ -8,77 +8,244 @@
     <link rel="stylesheet" href="style.css">
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 </head>
 
 <body>
-    <nav class="navbar glass-panel">
-        <a href="index.html" class="nav-brand">LensLocker</a>
-        <div class="nav-links">
-            <a href="seller_login.html">Seller Login</a>
-            <a href="buyer_login.html" class="btn btn-primary" style="margin-left: 1rem; color: white;">Buyer Login</a>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-brand">LensLocker</a>
+        </div>
+        <div class="sidebar-nav">
+            <a href="index.html" class="nav-item active">
+                <span class="material-icons-round">home</span>
+                <span class="nav-text">Home</span>
+            </a>
+            <a href="about.html" class="nav-item">
+                <span class="material-icons-round">info</span>
+                <span class="nav-text">About Us</span>
+            </a>
+            <a href="contact.html" class="nav-item">
+                <span class="material-icons-round">contact_support</span>
+                <span class="nav-text">Contact Us</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <span class="material-icons-round">settings</span>
+                <span class="nav-text">Settings</span>
+            </a>
+            <div style="margin-top: auto;"></div> <!-- Spacer -->
+            <a href="seller_login.html" class="nav-item">
+                <span class="material-icons-round">storefront</span>
+                <span class="nav-text">Seller Portal</span>
+            </a>
+            <a href="buyer_login.html" class="nav-item btn-primary">
+                <span class="material-icons-round">login</span>
+                <span class="nav-text">Login</span>
+            </a>
         </div>
     </nav>
 
-    <div class="container">
-        <header style="text-align: center; margin-top: 4rem;">
-            <h1>Rent Premium Gear. Capture the Moment.</h1>
+    <!-- Main Content -->
+    <div class="main-content">
+        <header style="text-align: center; margin-top: 2rem;">
+            <h1>Rent Premium Gear.<br>Capture the Moment.</h1>
             <p style="font-size: 1.25rem; color: #94a3b8; max-width: 600px; margin: 1rem auto 3rem;">
                 The marketplace for photographers. Rent high-end cameras from verified sellers or monetize your own gear
                 today.
             </p>
-            <div>
-                <a href="buyer_dashboard.html" class="btn btn-primary" style="margin-right: 1rem;">Browse Cameras</a>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <a href="buyer_dashboard.html" class="btn btn-primary">Browse Cameras</a>
                 <a href="seller_login.html" class="btn btn-outline">Become a Seller</a>
             </div>
         </header>
 
+        <!-- Featured Gear (Static High Quality) -->
         <section style="margin-top: 6rem;">
-            <h2 style="text-align: center; margin-bottom: 3rem;">Featured Gear</h2>
-            <div class="grid" id="featured-cameras">
-                <!-- Camera cards will be injected here via JS (later) -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem;">
+                <h2>Featured Gear</h2>
+            </div>
+
+            <div class="grid">
                 <div class="card">
                     <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-                        alt="Camera">
+                        alt="Sony Alpha a7 III">
                     <div class="card-body">
                         <h3>Sony Alpha a7 III</h3>
-                        <p style="color: #94a3b8;">Full-frame mirrorless. Exceptional image quality.</p>
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-                            <span style="font-weight: 700; color: var(--primary-color);">$45 / day</span>
+                        <p style="color: #94a3b8; margin-bottom: 1rem;">Full-frame mirrorless. Exceptional image
+                            quality.</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 700; color: var(--primary-color); font-size: 1.1rem;">Rs 4500 /
+                                day</span>
                         </div>
                     </div>
                 </div>
                 <div class="card">
                     <img src="https://images.unsplash.com/photo-1502920917128-1aa500764cbd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-                        alt="Camera">
+                        alt="Canon EOS R5">
                     <div class="card-body">
                         <h3>Canon EOS R5</h3>
-                        <p style="color: #94a3b8;">High resolution, 8K video, advanced AF.</p>
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-                            <span style="font-weight: 700; color: var(--primary-color);">$60 / day</span>
+                        <p style="color: #94a3b8; margin-bottom: 1rem;">High resolution, 8K video, advanced AF.</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 700; color: var(--primary-color); font-size: 1.1rem;">Rs 6000 /
+                                day</span>
                         </div>
                     </div>
                 </div>
                 <div class="card">
                     <img src="https://images.unsplash.com/photo-1564466021188-1e4e8ce9e433?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-                        alt="Camera">
+                        alt="Fujifilm X-T4">
                     <div class="card-body">
                         <h3>Fujifilm X-T4</h3>
-                        <p style="color: #94a3b8;">Versatile mirrorless with in-body stabilization.</p>
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-                            <span style="font-weight: 700; color: var(--primary-color);">$35 / day</span>
+                        <p style="color: #94a3b8; margin-bottom: 1rem;">Versatile mirrorless with in-body stabilization.
+                        </p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 700; color: var(--primary-color); font-size: 1.1rem;">Rs 3500 /
+                                day</span>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- Fresh Listings (Dynamic from Logic) -->
+        <section style="margin-top: 6rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem;">
+                <h2>Recent Listings</h2>
+                <a href="buyer_dashboard.html"
+                    style="color: var(--primary-color); text-decoration: none; font-weight: 600;">View All &rarr;</a>
+            </div>
+            <!-- Dynamic Grid -->
+            <div class="grid" id="fresh-listings-grid">
+                <p style="color: #94a3b8;">Loading latest gear...</p>
+            </div>
+        </section>
+
+        <!-- Why Choose Us -->
+        <section style="margin-top: 8rem;">
+            <h2 style="text-align: center; display: block; margin-bottom: 3rem;">Why Choose LensLocker?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="material-icons-round feature-icon">verified_user</div>
+                    <h3>Verified Equipment</h3>
+                    <p style="color: #94a3b8;">Every camera is inspected and verified for quality assurance.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="material-icons-round feature-icon">payments</div>
+                    <h3>Secure Payments</h3>
+                    <p style="color: #94a3b8;">Transactions are encrypted and held securely until rental completion.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="material-icons-round feature-icon">schedule</div>
+                    <h3>Flexible Rentals</h3>
+                    <p style="color: #94a3b8;">Rent for a day, a week, or a month. Plans that fit your schedule.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Our Goals -->
+        <section style="margin-top: 8rem;" class="goals-section">
+            <div class="goals-text">
+                <h2>Our Goal</h2>
+                <p style="font-size: 1.1rem; line-height: 1.6; color: #94a3b8;">
+                    At LensLocker, we aim to democratize high-end photography. We believe that everyone should have
+                    access to professional-grade equipment without the massive upfront cost. Whether you're a student, a
+                    hobbyist, or a pro, our platform connects you with the tools you need to capture your vision.
+                </p>
+                <a href="about.html" class="btn btn-outline" style="margin-top: 1.5rem;">Read More About Us</a>
+            </div>
+            <div class="goals-image">
+                <img src="https://images.unsplash.com/photo-1452587925148-ce544e77e70d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                    alt="Photographer at work">
+            </div>
+        </section>
+
+        <!-- Satisfied Customers -->
+        <section style="margin-top: 8rem; margin-bottom: 4rem;">
+            <h2 style="text-align: center; display: block; margin-bottom: 3rem;">Trusted by Creators</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <p style="font-style: italic; color: #cbd5e1;">"LensLocker saved my shoot! I needed a backup body
+                        last minute and found one within minutes."</p>
+                    <div class="client-info">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Client" class="client-avatar">
+                        <div>
+                            <div style="font-weight: 700;">Sarah Jenkins</div>
+                            <div style="font-size: 0.85rem; color: #94a3b8;">Wedding Photographer</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p style="font-style: italic; color: #cbd5e1;">"Earning extra cash from my idle gear has never been
+                        easier. The platform is super intuitive."</p>
+                    <div class="client-info">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Client" class="client-avatar">
+                        <div>
+                            <div style="font-weight: 700;">Mike Chen</div>
+                            <div style="font-size: 0.85rem; color: #94a3b8;">Videographer</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p style="font-style: italic; color: #cbd5e1;">"Great selection of lenses. I got to try out the 85mm
+                        f/1.2 before buying it. Highly recommend!"</p>
+                    <div class="client-info">
+                        <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Client" class="client-avatar">
+                        <div>
+                            <div style="font-weight: 700;">Emily Ross</div>
+                            <div style="font-size: 0.85rem; color: #94a3b8;">Portrait Artist</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer style="text-align: center; padding: 2rem; color: #64748b; border-top: 1px solid var(--glass-border);">
+            <p>&copy; 2024 LensLocker. All rights reserved.</p>
+        </footer>
     </div>
 
     <script src="config.js"></script>
     <script src="theme.js"></script>
     <script src="supabase-client.js"></script>
+    <script>
+        // Fetch Fresh Listings
+        document.addEventListener('DOMContentLoaded', async () => {
+            const grid = document.getElementById('fresh-listings-grid');
+            if (!grid || typeof supabase === 'undefined') return;
+
+            const { data: cameras, error } = await supabase
+                .from('cameras')
+                .select('*')
+                .limit(6)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Error fetching listings:", error);
+                grid.innerHTML = '<p>Could not load listings.</p>';
+                return;
+            }
+
+            if (!cameras || cameras.length === 0) {
+                grid.innerHTML = '<p>No listings found yet. Be the first!</p>';
+                return;
+            }
+
+            grid.innerHTML = cameras.map(cam => `
+                <div class="card">
+                    <img src="${cam.image_url || 'https://via.placeholder.com/400x300'}" alt="${cam.model}">
+                    <div class="card-body">
+                        <h3>${cam.brand} ${cam.model}</h3>
+                        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${cam.description || 'No description'}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                            <span style="font-weight: 700; color: var(--primary-color);">Rs ${cam.price_per_day} / day</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        });
+    </script>
 </body>
 
 </html>
