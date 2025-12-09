@@ -382,14 +382,17 @@ async function viewPaymentProof(path) {
 async function updateRentalStatus(rentalId, newStatus) {
     if (!confirm(`Are you sure you want to ${newStatus} this request?`)) return;
 
-    const { error } = await sb
+    const { data, error } = await sb
         .from('rentals')
         .update({ status: newStatus })
-        .eq('id', rentalId);
+        .eq('id', rentalId)
+        .select();
 
     if (error) {
-        alert("Error updating status: " + error.message);
+        console.error("Error updating rental status:", error);
+        alert(`Error updating status: ${error.message}\n\nPlease ensure your database RLS policies are correctly configured.`);
     } else {
+        console.log("Rental status updated successfully:", data);
         alert(`Request ${newStatus} successfully.`);
         loadRentalRequests(true); // Refresh pending list
     }

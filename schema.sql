@@ -109,6 +109,7 @@ create policy "Owners (Buyers) can view own proof" on storage.objects for select
 
 create policy "Authenticated Users can view proofs" on storage.objects for select using ( bucket_id = 'payment_proofs' and auth.role() = 'authenticated' );
 
+
 -- RLS for Rentals
 alter table rentals enable row level security;
 
@@ -124,6 +125,11 @@ create policy "Buyers can insert rental requests"
 on rentals for insert with check ( auth.uid() = buyer_id );
 
 create policy "Sellers can update status of rentals for their cameras" 
-on rentals for update using ( 
+on rentals for update 
+using ( 
   camera_id in (select id from cameras where owner_id = auth.uid()) 
+)
+with check (
+  camera_id in (select id from cameras where owner_id = auth.uid())
 );
+
