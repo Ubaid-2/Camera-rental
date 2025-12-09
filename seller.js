@@ -398,6 +398,23 @@ async function updateRentalStatus(rentalId, newStatus) {
     }
 }
 
+// NEW: Confirm payment received
+async function confirmPayment(rentalId) {
+    if (!confirm("Confirm you have received the payment?")) return;
+
+    const { error } = await sb
+        .from('rentals')
+        .update({ status: 'payment_confirmed' })
+        .eq('id', rentalId);
+
+    if (error) {
+        alert("Error: " + error.message);
+    } else {
+        alert("Payment confirmed! Rental is now ready for pickup.");
+        loadRentalRequests(true);
+    }
+}
+
 async function handleLogout() {
     await sb.auth.signOut();
     window.location.href = 'index.html';

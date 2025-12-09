@@ -8,7 +8,7 @@ async function checkAuth() {
     }
     document.getElementById('user-display').textContent = session.user.email;
     loadMarketplace();
-    updateCartBadge(); // Init badge
+    updateCartBadge();
 }
 
 // Global Cart State
@@ -38,7 +38,6 @@ function addToCart(cam) {
     CART.push(cam);
     saveCart();
 
-    // Animate badge
     const badge = document.getElementById('cart-badge');
     badge.classList.add('pulse');
     setTimeout(() => badge.classList.remove('pulse'), 500);
@@ -49,14 +48,13 @@ function addToCart(cam) {
 function removeFromCart(camId) {
     CART = CART.filter(item => item.id !== camId);
     saveCart();
-    loadCart(); // Refresh view
+    loadCart();
 }
 
-// Load marketplace with SECURE SIGNED URLs and Add to Cart button
+// Load marketplace
 async function loadMarketplace() {
     const container = document.getElementById('listings-container');
 
-    // Fetch all cameras
     const { data: cameras, error } = await sb
         .from('cameras')
         .select('*')
@@ -73,7 +71,6 @@ async function loadMarketplace() {
         return;
     }
 
-    // Generate Signed URLs for CAMEAS
     const camerasWithUrls = await Promise.all(cameras.map(async (cam) => {
         let imageUrl = 'https://via.placeholder.com/400x300?text=No+Image';
         if (cam.image_url) {
@@ -87,7 +84,6 @@ async function loadMarketplace() {
         return { ...cam, signedUrl: imageUrl };
     }));
 
-    // Fetch Sellers Info
     const ownerIds = [...new Set(cameras.map(c => c.owner_id))];
     const { data: owners } = await sb
         .from('profiles')
@@ -96,7 +92,6 @@ async function loadMarketplace() {
 
     const ownerMap = {};
     if (owners) {
-        // Pre-fetch owner avatars
         await Promise.all(owners.map(async (o) => {
             let avatar = 'https://via.placeholder.com/40?text=U';
             if (o.user_photo_url) {
@@ -112,15 +107,12 @@ async function loadMarketplace() {
 
     container.innerHTML = camerasWithUrls.map(cam => {
         const owner = ownerMap[cam.owner_id] || { name: 'Unknown', avatar: '' };
-
-        // Defense in Depth: Sanitize before display
         const safeOwnerName = sanitizeInput(owner.name);
         const safeCamName = sanitizeInput(cam.name);
         const safeCamDesc = sanitizeInput(cam.description);
 
         return `
         <div class="card" style="cursor:pointer; position:relative;">
-            <!-- Seller Badge -->
             <div onclick="event.stopPropagation(); window.location.href='seller_profile.html?id=${cam.owner_id}'" 
                  style="position:absolute; top:10px; left:10px; display:flex; align-items:center; gap:8px; background:rgba(0,0,0,0.6); padding:4px 10px 4px 4px; border-radius:20px; backdrop-filter:blur(4px); z-index:10; transition: transform 0.2s;"
                  onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
@@ -146,16 +138,13 @@ async function loadMarketplace() {
     `}).join('');
 }
 
-// Open Product Details Modal (Gallery)
+// Product Details Modal
 async function openProductDetails(cam) {
     const modal = document.getElementById('product-modal');
-
-    // Set Basic Info
     document.getElementById('detail-title').innerText = cam.name;
     document.getElementById('detail-price').innerText = `PKR ${cam.price_per_day} / day`;
     document.getElementById('detail-desc').innerText = cam.description;
 
-    // Set Rent Button Action -> Add To Cart
     const rentBtn = document.getElementById('detail-rent-btn');
     rentBtn.innerText = "Add to Cart";
     rentBtn.onclick = () => {
@@ -163,35 +152,29 @@ async function openProductDetails(cam) {
         closeProductModal();
     };
 
-    // Load Images (Cover + Gallery)
     const mainImg = document.getElementById('detail-main-img');
     const thumbContainer = document.getElementById('detail-thumbnails');
-
-    mainImg.src = cam.signedUrl; // Start with cover
+    mainImg.src = cam.signedUrl;
     thumbContainer.innerHTML = '<p>Loading gallery...</p>';
     modal.style.display = 'block';
 
-    // Fetch Gallery from DB
     const { data: galleryItems } = await sb
         .from('camera_gallery')
         .select('image_url')
         .eq('camera_id', cam.id);
 
-    // Prepare list of all image paths (Cover + Gallery)
-    let allPaths = [cam.image_url]; // Cover is first
+    let allPaths = [cam.image_url];
     if (galleryItems) {
         galleryItems.forEach(item => allPaths.push(item.image_url));
     }
 
-    // Generate Signed URLs for all
     const signedUrls = await Promise.all(allPaths.map(async (path) => {
         if (!path) return null;
-        if (path.startsWith('http')) return path; // Legacy
+        if (path.startsWith('http')) return path;
         const { data } = await sb.storage.from('camera_images').createSignedUrl(path, 3600);
         return data ? data.signedUrl : null;
     }));
 
-    // Render Thumbnails
     thumbContainer.innerHTML = '';
     signedUrls.forEach((url, index) => {
         if (!url) return;
@@ -203,10 +186,8 @@ async function openProductDetails(cam) {
         thumb.style.borderRadius = '4px';
         thumb.style.cursor = 'pointer';
         thumb.style.border = index === 0 ? '2px solid var(--primary-color)' : '2px solid transparent';
-
         thumb.onclick = () => {
             mainImg.src = url;
-            // Highlight active
             Array.from(thumbContainer.children).forEach(t => t.style.border = '2px solid transparent');
             thumb.style.border = '2px solid var(--primary-color)';
         };
@@ -222,7 +203,7 @@ function closeRentModal() {
     document.getElementById('rent-modal').style.display = 'none';
 }
 
-// Tab Switching (Updated)
+// Tab Switching
 function showBuyerSection(section) {
     document.getElementById('section-browse').style.display = section === 'browse' ? 'block' : 'none';
     document.getElementById('section-rentals').style.display = section === 'rentals' ? 'block' : 'none';
@@ -232,7 +213,6 @@ function showBuyerSection(section) {
     const btnRentals = document.getElementById('btn-rentals');
     const btnCart = document.getElementById('btn-cart');
 
-    // Reset all
     btnBrowse.classList.add('btn-outline');
     btnRentals.classList.add('btn-outline');
     btnCart.classList.add('btn-outline');
@@ -251,20 +231,15 @@ function showBuyerSection(section) {
 // Cart Logic
 async function loadCart() {
     const container = document.getElementById('cart-container');
-    const controls = document.getElementById('cart-checkout-controls');
+    const footer = document.getElementById('cart-footer');
 
     if (CART.length === 0) {
         container.innerHTML = '<div style="text-align:center; padding:3rem;"><span class="material-icons-round" style="font-size:3rem; color:#94a3b8;">shopping_cart</span><p style="color:#94a3b8; margin-top:1rem;">Your cart is empty. Start browsing!</p></div>';
-        controls.style.display = 'none';
+        if (footer) footer.style.display = 'none';
         return;
     }
 
-    controls.style.display = 'block';
-
-    // We already have signed URLs in the CART object (from loadMarketplace)
-    // But they might expire if the user waits too long. Ideally we re-sign them, but for prototype let's assume they work 
-    // or just show placeholders if needed. 
-    // To be safe, let's just use the cart data.
+    if (footer) footer.style.display = 'flex';
 
     container.innerHTML = CART.map(cam => `
         <div class="glass-panel" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;">
@@ -276,14 +251,36 @@ async function loadCart() {
             <button onclick="removeFromCart('${cam.id}')" class="btn btn-outline" style="border-color:#ef4444; color:#ef4444;">Remove</button>
         </div>
     `).join('');
-
-    updateCartTotal();
 }
 
-function updateCartTotal() {
+// Modal functions
+function openCheckoutModal() {
+    document.getElementById('checkout-modal').style.display = 'block';
+
+    const today = new Date().toISOString().split('T')[0];
+    const startInput = document.getElementById('cart-start-date');
+    const endInput = document.getElementById('cart-end-date');
+
+    startInput.min = today;
+    endInput.min = today;
+
+    startInput.addEventListener('change', () => {
+        endInput.min = startInput.value;
+        updateModalTotal();
+    });
+    endInput.addEventListener('change', updateModalTotal);
+
+    updateModalTotal();
+}
+
+function closeCheckoutModal() {
+    document.getElementById('checkout-modal').style.display = 'none';
+}
+
+function updateModalTotal() {
     const start = document.getElementById('cart-start-date').value;
     const end = document.getElementById('cart-end-date').value;
-    const display = document.getElementById('cart-total-display');
+    const display = document.getElementById('modal-total-display');
 
     if (!start || !end) {
         display.innerText = "PKR 0 (Select Dates)";
@@ -292,72 +289,214 @@ function updateCartTotal() {
 
     const startDate = new Date(start);
     const endDate = new Date(end);
-    const diffTime = Math.abs(endDate - startDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays <= 0) {
-        display.innerText = "Invalid Dates";
+    if (startDate > endDate) {
+        display.innerText = "Invalid Date Range";
         return;
     }
+
+    let diffTime = Math.abs(endDate - startDate);
+    let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) diffDays = 1;
 
     let totalPerDay = CART.reduce((sum, item) => sum + parseFloat(item.price_per_day), 0);
     let grandTotal = totalPerDay * diffDays;
 
-    display.innerText = `PKR ${grandTotal.toLocaleString()}`;
+    display.innerText = `PKR ${grandTotal.toLocaleString()} (${diffDays} days)`;
 }
 
-// Add listeners to date inputs
-const cartStart = document.getElementById('cart-start-date');
-const cartEnd = document.getElementById('cart-end-date');
-if (cartStart && cartEnd) {
-    cartStart.addEventListener('change', updateCartTotal);
-    cartEnd.addEventListener('change', updateCartTotal);
+// Overlap check
+async function checkAvailability(cameraIds, startDate, endDate) {
+    if (!cameraIds || cameraIds.length === 0) return true;
+
+    const { data: conflicts, error } = await sb
+        .from('rentals')
+        .select('camera_id, start_date, end_date')
+        .in('camera_id', cameraIds)
+        .neq('status', 'rejected')
+        .neq('status', 'cancelled')
+        .lte('start_date', endDate)
+        .gte('end_date', startDate);
+
+    if (error) {
+        console.error("Availability Check Error:", error);
+        throw new Error("Could not verify availability.");
+    }
+
+    return conflicts && conflicts.length > 0 ? false : true;
 }
 
+// SIMPLIFIED CHECKOUT - NO PAYMENT YET
 async function checkoutCart() {
     const start = document.getElementById('cart-start-date').value;
     const end = document.getElementById('cart-end-date').value;
+    const pickupTime = document.getElementById('cart-pickup-time').value;
+    const renterName = document.getElementById('cart-name').value;
+    const renterPhone = document.getElementById('cart-phone').value;
+    const renterAddress = document.getElementById('cart-address').value;
 
     if (!start || !end) {
-        alert("Please select start and end dates for your rental.");
+        alert("Please select start and end dates.");
         return;
     }
-
-    if (new Date(start) >= new Date(end)) {
+    if (new Date(start) > new Date(end)) {
         alert("End date must be after start date.");
         return;
     }
+    if (!renterName || !renterPhone || !renterAddress) {
+        alert("Please fill in all contact info.");
+        return;
+    }
+    if (!pickupTime) {
+        alert("Please select a pickup time.");
+        return;
+    }
 
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const diffDays = Math.ceil(Math.abs(endDate - startDate) / (1000 * 60 * 60 * 24));
+    const submitBtn = document.getElementById('btn-confirm-checkout');
+    const originalText = submitBtn.innerText;
+    submitBtn.innerText = "Checking Availability...";
+    submitBtn.disabled = true;
 
-    // Prepare Batch Insert
-    const { data: { user } } = await sb.auth.getUser();
+    try {
+        const cameraIds = CART.map(c => c.id);
+        const isAvailable = await checkAvailability(cameraIds, start, end);
 
-    const rentalRecords = CART.map(cam => ({
-        camera_id: cam.id,
-        buyer_id: user.id,
-        start_date: start,
-        end_date: end,
-        total_price: parseFloat(cam.price_per_day) * diffDays,
-        status: 'pending'
-    }));
+        if (!isAvailable) {
+            alert("One or more items are NOT available for the selected dates.");
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
 
-    // Insert
-    const { error } = await sb.from('rentals').insert(rentalRecords);
+        submitBtn.innerText = "Submitting...";
+        const { data: { user } } = await sb.auth.getUser();
 
-    if (error) {
-        alert("Checkout failed: " + error.message);
-    } else {
-        alert("Rental requests sent successfully!");
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        let diffDays = Math.ceil(Math.abs(endDate - startDate) / (1000 * 60 * 60 * 24));
+        if (diffDays === 0) diffDays = 1;
+
+        const rentalRecords = CART.map(cam => ({
+            camera_id: cam.id,
+            buyer_id: user.id,
+            start_date: start,
+            end_date: end,
+            total_price: parseFloat(cam.price_per_day) * diffDays,
+            pickup_time: sanitizeInput(pickupTime),
+            renter_name: sanitizeInput(renterName),
+            renter_phone: sanitizeInput(renterPhone),
+            renter_address: sanitizeInput(renterAddress),
+            status: 'pending'
+        }));
+
+        const { error } = await sb.from('rentals').insert(rentalRecords);
+        if (error) throw error;
+
+        alert("Request submitted! Seller will review. You'll pay after approval.");
         CART = [];
         saveCart();
-        showBuyerSection('rentals'); // Go to requests view
+        closeCheckoutModal();
+        showBuyerSection('rentals');
+
+    } catch (error) {
+        console.error("Checkout Error:", error);
+        alert("Request failed: " + error.message);
+    } finally {
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
     }
 }
 
-// Load My Rentals
+// NEW: Submit payment after approval
+async function submitPayment(rentalId) {
+    const method = document.querySelector(`input[name="payment-method-${rentalId}"]:checked`);
+
+    if (!method) {
+        alert("Please select a payment method.");
+        return;
+    }
+
+    const paymentMethod = method.value;
+
+    if (paymentMethod === 'online') {
+        const trxId = document.getElementById(`trx-id-${rentalId}`).value;
+        const proofFile = document.getElementById(`proof-file-${rentalId}`).files[0];
+
+        if (!trxId) {
+            alert("Please enter transaction ID.");
+            return;
+        }
+        if (!proofFile) {
+            alert("Please upload payment screenshot.");
+            return;
+        }
+        if (!validateImageFile(proofFile)) return;
+
+        try {
+            const { data: { user } } = await sb.auth.getUser();
+            const ext = proofFile.name.split('.').pop();
+            const fileName = `${user.id}_payment_${Date.now()}.${ext}`;
+
+            const { error: upErr } = await sb.storage
+                .from('payment_proofs')
+                .upload(fileName, proofFile);
+
+            if (upErr) throw upErr;
+
+            const { error } = await sb
+                .from('rentals')
+                .update({
+                    payment_method: 'online',
+                    transaction_id: sanitizeInput(trxId),
+                    payment_proof_url: fileName,
+                    status: 'payment_pending'
+                })
+                .eq('id', rentalId);
+
+            if (error) throw error;
+
+            alert("Payment submitted! Seller will confirm receipt.");
+            loadMyRentals();
+
+        } catch (error) {
+            console.error("Payment Error:", error);
+            alert("Payment submission failed: " + error.message);
+        }
+    } else {
+        const { error } = await sb
+            .from('rentals')
+            .update({
+                payment_method: 'face-to-face',
+                status: 'payment_pending'
+            })
+            .eq('id', rentalId);
+
+        if (error) {
+            alert("Error: " + error.message);
+        } else {
+            alert("Face-to-face payment selected. Seller will confirm after meetup.");
+            loadMyRentals();
+        }
+    }
+}
+
+async function cancelBooking(rentalId) {
+    if (!confirm("Cancel this booking?")) return;
+
+    const { error } = await sb
+        .from('rentals')
+        .update({ status: 'cancelled' })
+        .eq('id', rentalId);
+
+    if (error) {
+        alert("Error: " + error.message);
+    } else {
+        alert("Booking cancelled.");
+        loadMyRentals();
+    }
+}
+
+// Load My Rentals with PAYMENT FORM for approved
 async function loadMyRentals() {
     const container = document.getElementById('rentals-container');
     container.innerHTML = '<p style="text-align: center; color: #94a3b8;">Loading rentals...</p>';
@@ -379,32 +518,78 @@ async function loadMyRentals() {
     }
 
     if (!rentals || rentals.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color: #94a3b8;">You haven\'t made any rental requests yet.</p>';
+        container.innerHTML = '<p style="text-align:center; color: #94a3b8;">No rental requests yet.</p>';
         return;
     }
 
     container.innerHTML = rentals.map(r => {
         const camName = r.cameras ? r.cameras.name : 'Unknown Camera';
-
         let badgeColor = 'orange';
         if (r.status === 'approved') badgeColor = 'green';
         if (r.status === 'rejected') badgeColor = 'red';
         if (r.status === 'completed') badgeColor = 'blue';
+        if (r.status === 'cancelled') badgeColor = 'gray';
+        if (r.status === 'payment_pending') badgeColor = 'yellow';
+        if (r.status === 'payment_confirmed') badgeColor = 'limegreen';
+
+        let actionHtml = '';
+
+        // PENDING - can cancel
+        if (r.status === 'pending') {
+            actionHtml = `<button onclick="cancelBooking('${r.id}')" style="background:transparent; border:1px solid #ef4444; color:#ef4444; padding:0.5rem 1rem; border-radius:4px; cursor:pointer;">Cancel</button>`;
+        }
+
+        // APPROVED - SHOW PAYMENT FORM
+        if (r.status === 'approved') {
+            actionHtml = `
+                <div style="background:rgba(34,197,94,0.1); padding:1rem; border-radius:8px; margin-top:1rem; border:1px solid #22c55e;">
+                    <h4 style="margin:0 0 0.5rem 0; color:#22c55e;">✅ Approved! Complete Payment</h4>
+                    <p style="margin:0; font-size:0.9rem;">Send PKR ${r.total_price} to:</p>
+                    <p style="margin:0.25rem 0; font-weight:bold; color:var(--primary-color);">03065471848 (Easypaisa/SadaPay)</p>
+                    
+                    <div style="margin-top:1rem;">
+                        <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                            <input type="radio" name="payment-method-${r.id}" value="online"> Online Payment
+                        </label>
+                        <div id="online-fields-${r.id}" style="margin-left:1.5rem; display:none;">
+                            <input type="text" id="trx-id-${r.id}" placeholder="Transaction ID" style="width:100%; margin-bottom:0.5rem; padding:0.5rem; border-radius:4px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.3); color:white;">
+                            <input type="file" id="proof-file-${r.id}" accept="image/*" style="width:100%; margin-bottom:0.5rem; padding:0.5rem;">
+                        </div>
+                        
+                        <label style="display:flex; align-items:center; gap:0.5rem;">
+                            <input type="radio" name="payment-method-${r.id}" value="face-to-face"> Face-to-Face Payment
+                        </label>
+                    </div>
+                    
+                    <button onclick="submitPayment('${r.id}')" style="margin-top:1rem; background:#22c55e; color:white; border:none; padding:0.5rem 1.5rem; border-radius:4px; cursor:pointer; width:100%;">Submit Payment</button>
+                </div>
+                <script>
+                    document.querySelectorAll('input[name="payment-method-${r.id}"]').forEach(radio => {
+                        radio.addEventListener('change', (e) => {
+                            document.getElementById('online-fields-${r.id}').style.display = e.target.value === 'online' ? 'block' : 'none';
+                        });
+                    });
+                </script>
+            `;
+        }
+
+        // PAYMENT_PENDING
+        if (r.status === 'payment_pending') {
+            actionHtml = `<div style="background:rgba(251,191,36,0.1); padding:0.5rem 1rem; border-radius:4px; color:#fbbf24; border:1px solid #fbbf24;">⏳ Waiting for seller confirmation...</div>`;
+        }
+
+        // PAYMENT_CONFIRMED
+        if (r.status === 'payment_confirmed') {
+            actionHtml = `<div style="background:rgba(34,197,94,0.1); padding:0.5rem 1rem; border-radius:4px; color:#22c55e; border:1px solid #22c55e;">✅ Payment Confirmed - Ready for Pickup!</div>`;
+        }
 
         return `
-        <div class="glass-panel" style="padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-            <div>
-                <h4 style="margin:0 0 0.5rem 0;">${camName}</h4>
-                <p style="margin:0; font-size:0.9rem; opacity:0.8;">Dates: ${r.start_date} to ${r.end_date}</p>
-                <p style="margin:0; font-size:0.9rem; opacity:0.8;">Total: <strong style="color:var(--primary-color);">PKR ${r.total_price}</strong></p>
-                <p style="margin-top:0.5rem; font-weight:bold; color:${badgeColor}; text-transform:uppercase; font-size:0.8rem;">Status: ${r.status}</p>
-            </div>
-            ${r.status === 'approved' ? `
-            <div style="background:rgba(34, 197, 94, 0.1); padding:0.5rem 1rem; border-radius:4px; color:#22c55e; border:1px solid #22c55e;">
-                <span class="material-icons-round" style="vertical-align:middle; font-size:1.2rem; margin-right:4px;">check_circle</span>
-                Ready for Pickup
-            </div>
-            ` : ''}
+        <div class="glass-panel" style="padding: 1.5rem;">
+            <h4 style="margin:0 0 0.5rem 0;">${camName}</h4>
+            <p style="margin:0; font-size:0.9rem; opacity:0.8;">Dates: ${r.start_date} to ${r.end_date}</p>
+            <p style="margin:0; font-size:0.9rem; opacity:0.8;">Total: <strong style="color:var(--primary-color);">PKR ${r.total_price}</strong></p>
+            <p style="margin-top:0.5rem; font-weight:bold; color:${badgeColor}; text-transform:uppercase; font-size:0.8rem;">Status: ${r.status.replace('_', ' ')}</p>
+            ${actionHtml}
         </div>
         `;
     }).join('');
