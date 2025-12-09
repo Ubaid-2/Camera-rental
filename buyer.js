@@ -255,20 +255,39 @@ async function loadCart() {
 
 // Modal functions
 function openCheckoutModal() {
-    document.getElementById('checkout-modal').style.display = 'block';
+    const modal = document.getElementById('checkout-modal');
+    modal.style.display = 'block';
 
     const today = new Date().toISOString().split('T')[0];
     const startInput = document.getElementById('cart-start-date');
     const endInput = document.getElementById('cart-end-date');
 
+    // Set minimum dates
     startInput.min = today;
     endInput.min = today;
 
-    startInput.addEventListener('change', () => {
-        endInput.min = startInput.value;
+    // Clear previous values
+    startInput.value = '';
+    endInput.value = '';
+    document.getElementById('cart-pickup-time').value = '';
+    document.getElementById('cart-name').value = '';
+    document.getElementById('cart-phone').value = '';
+    document.getElementById('cart-address').value = '';
+
+    // Remove old listeners to prevent duplicates
+    const newStartInput = startInput.cloneNode(true);
+    const newEndInput = endInput.cloneNode(true);
+    startInput.parentNode.replaceChild(newStartInput, startInput);
+    endInput.parentNode.replaceChild(newEndInput, endInput);
+
+    // Add fresh event listeners
+    document.getElementById('cart-start-date').addEventListener('change', () => {
+        const start = document.getElementById('cart-start-date').value;
+        document.getElementById('cart-end-date').min = start || today;
         updateModalTotal();
     });
-    endInput.addEventListener('change', updateModalTotal);
+
+    document.getElementById('cart-end-date').addEventListener('change', updateModalTotal);
 
     updateModalTotal();
 }
