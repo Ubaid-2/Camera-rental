@@ -277,6 +277,14 @@ function closeCheckoutModal() {
     document.getElementById('checkout-modal').style.display = 'none';
 }
 
+// Helper to toggle payment method fields
+function togglePaymentFields(rentalId, method) {
+    const onlineFields = document.getElementById(`online-fields-${rentalId}`);
+    if (onlineFields) {
+        onlineFields.style.display = method === 'online' ? 'block' : 'none';
+    }
+}
+
 function updateModalTotal() {
     const start = document.getElementById('cart-start-date').value;
     const end = document.getElementById('cart-end-date').value;
@@ -548,28 +556,21 @@ async function loadMyRentals() {
                     <p style="margin:0.25rem 0; font-weight:bold; color:var(--primary-color);">03065471848 (Easypaisa/SadaPay)</p>
                     
                     <div style="margin-top:1rem;">
-                        <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
-                            <input type="radio" name="payment-method-${r.id}" value="online"> Online Payment
+                        <label style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem; cursor:pointer;">
+                            <input type="radio" name="payment-method-${r.id}" value="online" onchange="togglePaymentFields('${r.id}', 'online')"> Online Payment
                         </label>
                         <div id="online-fields-${r.id}" style="margin-left:1.5rem; display:none;">
                             <input type="text" id="trx-id-${r.id}" placeholder="Transaction ID" style="width:100%; margin-bottom:0.5rem; padding:0.5rem; border-radius:4px; border:1px solid rgba(255,255,255,0.2); background:rgba(0,0,0,0.3); color:white;">
-                            <input type="file" id="proof-file-${r.id}" accept="image/*" style="width:100%; margin-bottom:0.5rem; padding:0.5rem;">
+                            <input type="file" id="proof-file-${r.id}" accept="image/*" style="width:100%; margin-bottom:0.5rem; padding:0.5rem; color:white;">
                         </div>
                         
-                        <label style="display:flex; align-items:center; gap:0.5rem;">
-                            <input type="radio" name="payment-method-${r.id}" value="face-to-face"> Face-to-Face Payment
+                        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                            <input type="radio" name="payment-method-${r.id}" value="face-to-face" onchange="togglePaymentFields('${r.id}', 'face-to-face')"> Face-to-Face Payment
                         </label>
                     </div>
                     
                     <button onclick="submitPayment('${r.id}')" style="margin-top:1rem; background:#22c55e; color:white; border:none; padding:0.5rem 1.5rem; border-radius:4px; cursor:pointer; width:100%;">Submit Payment</button>
                 </div>
-                <script>
-                    document.querySelectorAll('input[name="payment-method-${r.id}"]').forEach(radio => {
-                        radio.addEventListener('change', (e) => {
-                            document.getElementById('online-fields-${r.id}').style.display = e.target.value === 'online' ? 'block' : 'none';
-                        });
-                    });
-                </script>
             `;
         }
 
