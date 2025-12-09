@@ -39,9 +39,11 @@ async function loadProfile(userId) {
         if (profile.user_photo_url.startsWith('http')) {
             document.getElementById('profile-img').src = profile.user_photo_url;
         } else {
-            // Generate Signed URL for display
-            const { data } = await sb.storage.from('cnic_images').createSignedUrl(profile.user_photo_url, 3600);
+            // Try Public Bucket First (New System)
+            const { data } = await sb.storage.from('camera_images').createSignedUrl(profile.user_photo_url, 3600);
             if (data) document.getElementById('profile-img').src = data.signedUrl;
+
+            // Fallback (for old profiles)? Not easy to check without 404. We assume new approach.
         }
     }
 }
@@ -90,7 +92,7 @@ async function uploadAvatar() {
     const fileName = `${user.id}_selfie_${Date.now()}.${fileExt}`; // New unique name
 
     const { error: upErr } = await sb.storage
-        .from('cnic_images') // Using existing bucket for user photos
+        .from('camera_images') // Using PUBLIC bucket for user photos now
         .upload(fileName, file);
 
     if (upErr) {

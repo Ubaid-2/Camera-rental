@@ -24,14 +24,16 @@
 
 :root.light-mode {
     --bg-color: #f0f4f8;
-    --text-color: #1e293b;
+    --text-color: #0f172a;
+    /* Darker text for better contrast */
     --primary-color: #2563eb;
     --primary-hover: #3b82f6;
-    --glass-bg: rgba(255, 255, 255, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.4);
-    --card-bg: rgba(255, 255, 255, 0.75);
-    --input-bg: rgba(255, 255, 255, 0.85);
-    --shadow-color: rgba(148, 163, 184, 0.2);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    /* Slightly more opaque */
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --input-bg: rgba(255, 255, 255, 0.95);
+    --shadow-color: rgba(148, 163, 184, 0.25);
     --accent-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
 }
 

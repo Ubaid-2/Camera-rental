@@ -87,7 +87,7 @@ async function loadMarketplace() {
                     <h3>${cam.name}</h3>
                     <p style="color: var(--text-color); opacity: 0.8; min-height: 3rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${cam.description}</p>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
-                        <span style="font-weight: 700; color: var(--primary-color); font-size: 1.2rem;">$${cam.price_per_day} <span style="font-size: 0.9rem; opacity: 0.7;">/ day</span></span>
+                        <span style="font-weight: 700; color: var(--primary-color); font-size: 1.2rem;">PKR ${cam.price_per_day} <span style="font-size: 0.9rem; opacity: 0.7;">/ day</span></span>
                         <button class="btn btn-outline" style="padding: 0.5rem 1rem;">View Details</button>
                     </div>
                 </div>
@@ -102,7 +102,7 @@ async function openProductDetails(cam) {
 
     // Set Basic Info
     document.getElementById('detail-title').innerText = cam.name;
-    document.getElementById('detail-price').innerText = `$${cam.price_per_day} / day`;
+    document.getElementById('detail-price').innerText = `PKR ${cam.price_per_day} / day`;
     document.getElementById('detail-desc').innerText = cam.description;
 
     // Set Rent Button Action
@@ -191,7 +191,7 @@ function updateTotal() {
     if (days && priceStr) {
         const pricePerDay = parseFloat(priceStr);
         const total = Math.ceil(days * pricePerDay);
-        document.getElementById('total-price').textContent = `$${total.toFixed(2)}`;
+        document.getElementById('total-price').textContent = `PKR ${total.toFixed(2)}`;
         // Also update modal display if needed
         const modalTotal = document.getElementById('modal-total-price');
         if (modalTotal) modalTotal.textContent = total.toFixed(2);
@@ -209,7 +209,7 @@ async function confirmRent() {
     const camId = document.getElementById('rent-camera-id').value;
     const start = document.getElementById('start-date').value;
     const end = document.getElementById('end-date').value;
-    const totalStr = document.getElementById('total-price').textContent.replace('$', '');
+    const totalStr = document.getElementById('total-price').textContent.replace('PKR ', '');
 
     if (!start || !end) {
         alert("Please select dates");

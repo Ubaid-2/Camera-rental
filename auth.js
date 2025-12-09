@@ -20,30 +20,27 @@ async function signUp(email, password, role, cnicFront, cnicBack, userPhoto) {
     // 2. Create profile entry
     if (data.user) {
         // Helper to upload one file
-        const uploadFile = async (file, suffix) => {
+        const uploadFile = async (file, suffix, bucket = 'cnic_images') => {
             const fileExt = file.name.split('.').pop();
             const fileName = `${data.user.id}_${suffix}.${fileExt}`;
             const { error: upErr } = await sb.storage
-                .from('cnic_images')
+                .from(bucket)
                 .upload(fileName, file);
 
             if (upErr) throw upErr;
 
-            if (upErr) throw upErr;
-
-            // SECURE CHANGE: We now return the path, NOT the public URL.
-            // Admin will generate a Signed URL on the fly.
+            // SECURE CHANGE: We now return the path
             return fileName;
         };
 
         try {
             console.log("Uploading verification documents...");
 
-            // Upload all 3 in parallel
+            // Upload CNIC to secure bucket, Selfie to public bucket (camera_images)
             const [frontUrl, backUrl, photoUrl] = await Promise.all([
-                uploadFile(cnicFront, 'front'),
-                uploadFile(cnicBack, 'back'),
-                uploadFile(userPhoto, 'selfie')
+                uploadFile(cnicFront, 'front', 'cnic_images'),
+                uploadFile(cnicBack, 'back', 'cnic_images'),
+                uploadFile(userPhoto, 'selfie', 'camera_images')
             ]);
 
             console.log("Files uploaded. Creating profile...");
